@@ -18,13 +18,23 @@
 package org.keycloak.email.freemarker;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+
+import java.net.URLEncoder;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.email.EmailException;
@@ -35,11 +45,13 @@ import org.keycloak.email.freemarker.beans.ProfileBean;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventType;
 import org.keycloak.forms.login.freemarker.model.UrlBean;
+import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakUriInfo;
 import org.keycloak.models.OrganizationModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import org.keycloak.theme.FreeMarkerException;
 import org.keycloak.theme.Theme;
@@ -75,8 +87,110 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
     }
 
     @Override
+    public EmailTemplateProvider setUser(UserModel user, ClientModel client) {
+        String baseUrl = client.getBaseUrl();
+        attributes.put("baseUrl", baseUrl);
+
+        return setUser(user);
+    }
+    
+    @Override
     public EmailTemplateProvider setUser(UserModel user) {
         this.user = user;
+        
+        boolean isEnabled = user.isEnabled();
+        boolean isEmailVerified = user.isEmailVerified();
+        String strIsEnabled = "F";
+        String strIsEmailVerified = "F";
+        if(isEnabled)        strIsEnabled = "T";
+        if(isEmailVerified)    strIsEmailVerified = "T";
+        
+        String userId = user.getId();
+        String username = user.getUsername();
+        String firstName = user.getFirstName();
+        String lastName = user.getLastName();
+        String email = user.getEmail();
+        
+        // Realm, User 정보
+        AuthenticationFlowModel flowModel = realm.getBrowserFlow();
+        String dbBrowserFlowAlias = flowModel.getAlias();
+        
+        if(dbBrowserFlowAlias == null)
+            dbBrowserFlowAlias = "";
+        
+        if(dbBrowserFlowAlias.toUpperCase().indexOf("AUTOOTP") > -1)
+            dbBrowserFlowAlias = "AUTOOTP";
+        
+        String dateTime = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        
+        String dbDomain = realm.getAttribute("autootpAppSettingDomain");
+        String dbEmail = realm.getAttribute("autootpAppSettingEmail");
+        String dbIpAddr = realm.getAttribute("autootpAppSettingIpAddress");
+        String dbName = realm.getAttribute("autootpAppSettingName");
+        String dbProxyDomain = realm.getAttribute("autootpAppSettingProxyServerDomain");
+        String dbStep = realm.getAttribute("autootpAppSettingStep");
+        String dbDomainValidToken = realm.getAttribute("autootpReturnDomainValidationToken");
+        String dbSecretKey = realm.getAttribute("autootpServerSettingAppServerKey");
+        String dbAuthDomain = realm.getAttribute("autootpServerSettingAuthServerDomain");
+        
+        /*
+        System.out.println("dbBrowserFlowAlias [" + dbBrowserFlowAlias + "]");
+        System.out.println("autootpAppSettingDomain [" + dbDomain + "]");
+        System.out.println("autootpAppSettingEmail [" + dbEmail + "]");
+        System.out.println("autootpAppSettingIpAddress [" + dbIpAddr + "]");
+        System.out.println("autootpAppSettingName [" + dbName + "]");
+        System.out.println("autootpAppSettingProxyServerDomain [" + dbProxyDomain + "]");
+        System.out.println("autootpAppSettingStep [" + dbStep + "]");
+        System.out.println("autootpReturnDomainValidationToken [" + dbDomainValidToken + "]");
+        System.out.println("autootpServerSettingAppServerKey [" + dbSecretKey + "]");
+        System.out.println("autootpServerSettingAuthServerDomain [" + dbAuthDomain + "]");
+        */
+        
+        attributes.put("nowDate", dateTime);
+        attributes.put("dbBrowserFlowAlias", dbBrowserFlowAlias);
+        attributes.put("autootpAppSettingDomain", dbDomain);
+        attributes.put("autootpAppSettingEmail", dbEmail);
+        attributes.put("autootpAppSettingIpAddress", dbIpAddr);
+        attributes.put("autootpAppSettingName", dbName);
+        attributes.put("autootpAppSettingProxyServerDomain", dbProxyDomain);
+        attributes.put("autootpAppSettingStep", dbStep);
+        attributes.put("autootpReturnDomainValidationToken", dbDomainValidToken);
+        attributes.put("autootpServerSettingAppServerKey", dbSecretKey);
+        attributes.put("autootpServerSettingAuthServerDomain", dbAuthDomain);
+
+        /*
+        System.out.println("isEnabled [" + strIsEnabled + "]");
+        System.out.println("isEmailVerified [" + strIsEmailVerified + "]");
+        System.out.println("userId [" + userId + "]");
+        System.out.println("username [" + username + "]");
+        System.out.println("firstName [" + firstName + "]");
+        System.out.println("lastName [" + lastName + "]");
+        System.out.println("email [" + email + "]");
+        */
+        
+        attributes.put("isEnabled", strIsEnabled);
+        attributes.put("isEmailVerified", strIsEmailVerified);
+        attributes.put("userId", userId);
+        attributes.put("username", username);
+        attributes.put("firstName", firstName);
+        attributes.put("lastName", lastName);
+        attributes.put("email", email);
+
+        String link = "realms/" + realm.getName() + "/login-actions/autootp-regist";
+        KeycloakUriInfo uriInfo = session.getContext().getUri();
+        link = uriInfo.getBaseUri() + link;
+        attributes.put("autootpLink", link);
+
+        String baseUrl = (String) attributes.get("baseUrl");
+        long expirationInMinutes = realm.getActionTokenGeneratedByUserLifespan() / 60;    // Action tokens : User-Initiated Action Lifespan
+        String autootpRegParam = dateTime + "|||" + expirationInMinutes + "|||" + username + "|||" + URLEncode(dbAuthDomain) + "|||" + URLEncode(baseUrl);
+        String encParam = getEncryptAES(autootpRegParam, dbSecretKey.getBytes());
+        encParam = encParam.replaceAll("\\+", "_");
+        attributes.put("autootpRegParam", encParam);
+        
+        String strExpirationInMinutes = format(expirationInMinutes * 60);
+        attributes.put("strExpiration", strExpirationInMinutes);
+
         return this;
     }
 
@@ -162,6 +276,38 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
 
         send("emailVerificationSubject", "email-verification.ftl", attributes);
     }
+    
+    @Override
+    public void sendAutoOTPEmail(String link, String username, String dbSecretKey, String dbAuthDomain, long expirationInMinutes, String addr, String baseUrl) throws EmailException {
+        
+        System.out.println("FreeMarkerEmailTemplateProvider :: sendAutoOTPEmail(" + link + ", " + user + ", " + expirationInMinutes + ", " + addr + ", " + baseUrl + ")");
+
+        setRealm(session.getContext().getRealm());
+        //setUser(user);
+        
+        KeycloakUriInfo uriInfo = session.getContext().getUri();
+        link = uriInfo.getBaseUri() + link;
+        attributes.put("autootpLink", link);
+        
+        Map<String, Object> attributes = new HashMap<>(this.attributes);
+        addLinkInfoIntoAttributes(link, expirationInMinutes, attributes);
+        attributes.put("addr", addr);
+        
+        
+        String dateTime = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        //String autootpRegParam = "nowDate=" + dateTime + "&username=" + username + "&secretKey=" + dbSecretKey + "&authDomain=" + URLEncode(dbAuthDomain);
+        String autootpRegParam = dateTime + "|||" + expirationInMinutes + "|||" + username + "|||" + URLEncode(dbAuthDomain) + "|||" + URLEncode(baseUrl);
+        String encParam = getEncryptAES(autootpRegParam, dbSecretKey.getBytes());
+        encParam = encParam.replaceAll("\\+", "_");
+        attributes.put("autootpRegParam", encParam);
+        
+        String strExpirationInMinutes = format(expirationInMinutes * 60);
+        attributes.put("strExpiration", strExpirationInMinutes);
+        
+        
+        //send("emailAutoOTPSubject", "email-autootp.ftl", attributes);
+        send("emailAutoOTPSubject", Collections.emptyList(), "email-autootp.ftl", attributes, addr);
+    }
 
     @Override
     public void sendOrgInviteEmail(OrganizationModel organization, String link, long expirationInMinutes) throws EmailException {
@@ -222,18 +368,31 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
 
             attributes.put("properties", theme.getProperties());
             attributes.put("realmName", getRealmName());
-            attributes.put("user", new ProfileBean(user, session));
+            
+            if(subjectKey.equals("emailAutoOTPSubject")) {
+            }
+            else {
+                attributes.put("user", new ProfileBean(user, session));
+            }
+            
             KeycloakUriInfo uriInfo = session.getContext().getUri();
             attributes.put("url", new UrlBean(realm, theme, uriInfo.getBaseUri(), null));
 
             String subject = new MessageFormat(messages.getProperty(subjectKey, subjectKey), locale).format(subjectAttributes.toArray());
             String textTemplate = String.format("text/%s", template);
             String textBody;
-            try {
-                textBody = freeMarker.processTemplate(attributes, textTemplate, theme);
-            } catch (final FreeMarkerException e) {
-                throw new EmailException("Failed to template plain text email.", e);
+            
+            if(subjectKey.equals("emailAutoOTPSubject")) {
+                textBody = "";
             }
+            else {
+                try {
+                    textBody = freeMarker.processTemplate(attributes, textTemplate, theme);
+                } catch (final FreeMarkerException e) {
+                    throw new EmailException("Failed to template plain text email.", e);
+                }
+            }
+            
             String htmlTemplate = String.format("html/%s", template);
             String htmlBody;
             try {
@@ -322,4 +481,72 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
         }
     }
 
+    private static String getEncryptAES(String value, byte[] key) {
+        String strRet = null;
+        
+        byte[]  strIV = key;
+        if ( key == null || strIV == null ) return null;
+       try {
+           SecretKey secureKey = new SecretKeySpec(key, "AES");
+            Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            c.init(Cipher.ENCRYPT_MODE, secureKey, new IvParameterSpec(strIV));
+           byte[] byteStr = c.doFinal(value.getBytes());
+           strRet = java.util.Base64.getEncoder().encodeToString(byteStr);
+       } catch (Exception ex) {
+           ex.printStackTrace();
+       }
+       return strRet;
+   }
+    
+    private static String getDecryptAES(String encrypted, byte[] key) {
+        String strRet = null;
+        
+        byte[]  strIV = key;
+        if ( key == null || strIV == null ) return null;
+        try {
+            SecretKey secureKey = new SecretKeySpec(key, "AES");
+            Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            c.init(Cipher.DECRYPT_MODE, secureKey, new IvParameterSpec(strIV));
+            byte[] byteStr = java.util.Base64.getDecoder().decode(encrypted);//Base64Util.getDecData(encrypted);
+            strRet = new String(c.doFinal(byteStr), "utf-8");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return strRet;    
+    }
+    
+    public String URLEncode(String param) {
+       String retVal = "";
+       
+       if(param != null) {
+           try {
+               retVal = URLEncoder.encode(param, "UTF-8");
+           } catch (UnsupportedEncodingException e1) {
+               e1.printStackTrace();
+           }
+       }
+       
+       return retVal;
+   }
+    
+    protected String format(long valueInSeconds) {
+
+       String unitKey = "seconds";
+       long value = valueInSeconds;
+
+       if (value > 0 && value % 60 == 0) {
+           unitKey = "minutes";
+           value = value / 60;
+           if (value % 60 == 0) {
+               unitKey = "hours";
+               value = value / 60;
+               if (value % 24 == 0) {
+                   unitKey = "days";
+                   value = value / 24;
+               }
+           }
+       }
+
+       return value + " " + unitKey;
+   }
 }
