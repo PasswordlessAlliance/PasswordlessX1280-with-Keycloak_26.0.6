@@ -379,7 +379,7 @@ public class AutootpPolicyEndpoint {
 //          System.out.println("############################### AutootpPolicyEndpoint :: processGrantRequestInternal - KeyValueStr [" + KeyValueStr + "] ");
         }
     	
-    	Map<String, Object> callResult = callServerApi(methodType, url, KeyValueStr);
+    	Map<String, String> callResult = callServerApi(methodType, url, KeyValueStr);
     	
 //        cors.build(httpResponse);
 //        return cors.builder(Response.ok(callResult, MediaType.APPLICATION_JSON_TYPE)).build();
@@ -488,7 +488,7 @@ public class AutootpPolicyEndpoint {
     
     // ----------------------------------------------------------------------------------------- 내부함수
     
-    public Map<String, Object> callServerApi(String methodType, String url, String params) {
+    public Map<String, String> callServerApi(String methodType, String url, String params) {
     	
 		String result = "";
 		
@@ -510,7 +510,7 @@ public class AutootpPolicyEndpoint {
 
 //		System.out.println("result [" + result + "]");
 
-		Map<String, Object> mapResult = new HashMap<String, Object>();
+		Map<String, String> mapResult = new HashMap<String, String>();
 		
 
 		mapResult.put("result", result);
