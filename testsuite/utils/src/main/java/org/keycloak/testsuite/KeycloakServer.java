@@ -96,8 +96,7 @@ public class KeycloakServer {
     private boolean sysout = false;
 
     public static class KeycloakServerConfig {
-        //private String host = "localhost";
-    	private String host = "192.168.200.171";
+        private String host = "localhost";
         private int port = 8081;
         private String path = "/auth";
         private int portHttps = -1;
