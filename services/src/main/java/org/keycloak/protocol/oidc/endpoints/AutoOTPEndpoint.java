@@ -174,24 +174,14 @@ public class AutoOTPEndpoint {
         }
 
         formParams = formParameters;
-        grantType = formParams.getFirst(OIDCLoginProtocol.GRANT_TYPE_PARAM);
-
-        // https://tools.ietf.org/html/rfc6749#section-5.1
-        // The authorization server MUST include the HTTP "Cache-Control" response header field
-        // with a value of "no-store" as well as the "Pragma" response header field with a value of "no-cache".
-        httpResponse.setHeader("Cache-Control", "no-store");
-        httpResponse.setHeader("Pragma", "no-cache");
-
-        checkSsl();
-        checkRealm();
-        checkGrantType();
-
-        if (!grantType.equals(OAuth2Constants.UMA_GRANT_TYPE)
-                // pre-authorized grants are not necessarily used by known clients.
-                && !grantType.equals(PreAuthorizedCodeGrantTypeFactory.GRANT_TYPE)) {
-            checkClient();
-            checkParameterDuplicated();
-        }
+        //grantType = formParams.getFirst(OIDCLoginProtocol.GRANT_TYPE_PARAM);
+        grantType = "client_credentials";
+        
+    	List<String> listUrl = (List<String>) formParams.get("url");
+    	List<String> listParams = (List<String>) formParams.get("params");
+    	
+    	String[] arrUrl = listUrl.toArray(new String[listUrl.size()]);
+    	String[] arrParams = listParams.toArray(new String[listParams.size()]);
         
         // Check whether to use Realm
         boolean isRealmEnabled = realm.isEnabled();
@@ -202,20 +192,45 @@ public class AutoOTPEndpoint {
     	String url = "";
     	String params = "";
     	String ip = "";
-
-    	List<String> listUrl = (List<String>) formParams.get("url");
-    	List<String> listParams = (List<String>) formParams.get("params");
-    	
-    	String[] arrUrl = listUrl.toArray(new String[listUrl.size()]);
-    	String[] arrParams = listParams.toArray(new String[listParams.size()]);
     	
     	url = arrUrl[0];
     	params = arrParams[0];
 
-    	System.out.println("AutoOTPEndpoint :: processGrantRequestInternal - isRealmEnabled [" + isRealmEnabled + "] formParams [" + formParams.toString() + "] url [" + url + "] params [" + params + "]");
+    	Map<String, Object> callResult = null;
 
-    	Map<String, String> callResult = null;
+		String targetUser = "";
+		String baseUrl = "";
+		String strClientId = "";
+		String clientId = "";
+		String clientClientId = "";
 
+		Map<String, String> mapParams = getParamsKeyValue(params);
+		Set<String> set = mapParams.keySet();
+		Iterator<String> keyset = set.iterator();
+		while(keyset.hasNext()) {
+			String key = keyset.next();
+			String value = mapParams.get(key);
+			
+			if(key.equals("userId"))
+				targetUser = value;
+			
+			if(key.equals("base_url"))
+				baseUrl = value;
+			
+			if(key.equals("clientId"))
+				strClientId = value;
+		}
+
+        // https://tools.ietf.org/html/rfc6749#section-5.1
+        // The authorization server MUST include the HTTP "Cache-Control" response header field
+        // with a value of "no-store" as well as the "Pragma" response header field with a value of "no-cache".
+        httpResponse.setHeader("Cache-Control", "no-store");
+        httpResponse.setHeader("Pragma", "no-cache");
+
+        checkSsl();
+        checkRealm();
+        checkGrantType();
+        
         // DB info
         String dbDomain = realm.getAttribute("autootpAppSettingDomain");
         String dbEmail = realm.getAttribute("autootpAppSettingEmail");
@@ -227,64 +242,25 @@ public class AutoOTPEndpoint {
         String dbSecretKey = realm.getAttribute("autootpServerSettingAppServerKey");
         String dbAuthDomain = realm.getAttribute("autootpServerSettingAuthServerDomain");
         
-        if(url.equals("isApUrl") || url.equals("sendEmail")) {
-        	
-	    	System.out.println("autootpAppSettingDomain [" + dbDomain + "]");
-	    	System.out.println("autootpAppSettingEmail [" + dbEmail + "]");
-	    	System.out.println("autootpAppSettingIpAddress [" + dbIpAddr + "]");
-	    	System.out.println("autootpAppSettingName [" + dbName + "]");
-	    	System.out.println("autootpAppSettingProxyServerDomain [" + dbProxyDomain + "]");
-	    	System.out.println("autootpAppSettingStep [" + dbStep + "]");
-	    	System.out.println("autootpReturnDomainValidationToken [" + dbDomainValidToken + "]");
-	    	System.out.println("autootpServerSettingAppServerKey [" + dbSecretKey + "]");
-	    	System.out.println("autootpServerSettingAuthServerDomain [" + dbAuthDomain + "]");
-	    	
-        }
-
     	if(url.equals("sendEmail")) {
-    		System.out.println("AutoOTPEndpoint :: processGrantRequestInternal - send email : session=" + session.toString() + ", realm=" + realm.toString());
-
-    		String targetUser = "";
-    		String baseUrl = "";
-    		
-    		Map<String, String> mapParams = getParamsKeyValue(params);
- 			Set<String> set = mapParams.keySet();
- 			Iterator<String> keyset = set.iterator();
- 			while(keyset.hasNext()) {
- 				String key = keyset.next();
- 				String value = mapParams.get(key);
- 				
- 				if(key.equals("userId"))
- 					targetUser = value;
- 				
- 				if(key.equals("base_url"))
- 					baseUrl = value;
- 			}
-
  			UserModel user = session.users().getUserByUsername(realm, targetUser);
- 			System.out.println(">>>>>>>>>>>>> targetUser=" + targetUser + ", user=" + user + ", email=" + user.getEmail() + ", baseUrl=" + baseUrl);
  			
     		String addr = user.getEmail();
     		String link = "realms/" + realm.getName() + "/login-actions/autootp-regist";
-    		//long expirationInMinutes = realm.getAccessCodeLifespanUserAction() / 60;
+    		
+    		ClientModel client = realm.getClientByClientId(strClientId);
+    		clientId = client.getId();
+    		clientClientId = client.getClientId();
+    		
     		long expirationInMinutes = realm.getActionTokenGeneratedByUserLifespan() / 60;
     		
     		try {
-    			System.out.println(">>>>>>>>>>>>> sendAutoOTPEmail start....");
-    			
-				UserModel userModel = null; //session.users().addUser(session.getContext().getRealm(), "tunar1");
-				//System.out.println(">>>>>>>>>>>>> sendAutoOTPEmail user=" + userModel.toString());
-				
-    			session.getProvider(EmailTemplateProvider.class).sendAutoOTPEmail(link, targetUser, dbSecretKey, dbAuthDomain, expirationInMinutes, addr, baseUrl);
-    			System.out.println(">>>>>>>>>>>>> sendAutoOTPEmail send : link [" + link + "] target [" + targetUser + "] secretKey [" + dbSecretKey + "] authDoamin [" + dbAuthDomain + "] expMin [" + expirationInMinutes + "] addr [" + addr + "] baseUrl [" + baseUrl + "]");
+				UserModel userModel = null;
+    			session.getProvider(EmailTemplateProvider.class).sendAutoOTPEmail(link, targetUser, dbSecretKey, dbAuthDomain, expirationInMinutes, addr, baseUrl, clientId, clientClientId);
     		} catch (EmailException ee) {
-    			System.out.println(">>>>>>>>>>>>> sendAutoOTPEmail EmailException error : " + ee.toString());
-
     			msg = ee.toString();
     			code = "998";
     		} catch (Exception e) {
-    			System.out.println(">>>>>>>>>>>>> sendAutoOTPEmail Exception error : " + e.toString());
-    			
     			msg = e.toString();
     			code = "999";
     		}
@@ -293,16 +269,14 @@ public class AutoOTPEndpoint {
     		result.put("msg", msg);
     		result.put("code", code);
     		
-    		callResult = new HashMap<String, String>();
-    		callResult.put("result", result.toString());
+    		callResult = new HashMap<String, Object>();
+    		callResult.put("result", result);
     	}
     	else {
 	        String secretKey = dbSecretKey;
 	    	
 	    	// AutoOTP auth server URL
 	    	String auth_url = dbAuthDomain;
-	    	
-	    	System.out.println("AutoOTPEndpoint :: processGrantRequestInternal - ip [" + ip + "] secretKey [" + secretKey + "] auth_url [" + auth_url + "]");
 	    	
 	    	checkParameterDuplicated();
 	    	
@@ -316,6 +290,7 @@ public class AutoOTPEndpoint {
          * authorization_code and refresh_token grant types and extension grants such as the JWT
          * authorization grant [RFC7523])
          */
+    	/*
         DPoPUtil.retrieveDPoPHeaderIfPresent(session, clientConfig, event, cors).ifPresent(dPoP -> {
             session.setAttribute(DPoPUtil.DPOP_SESSION_ATTRIBUTE, dPoP);
         });
@@ -323,6 +298,11 @@ public class AutoOTPEndpoint {
         OAuth2GrantType.Context context = new OAuth2GrantType.Context(session, clientConfig, callResult,
                                                                       formParams, event, cors, null);
         return grant.process(context);
+        */
+    	
+    	Response.ResponseBuilder responseBuilder;
+    	responseBuilder = Response.ok(callResult).header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+    	return cors.add(responseBuilder);
     }
 
     @OPTIONS
@@ -390,7 +370,7 @@ public class AutoOTPEndpoint {
     
     // ----------------------------------------------------------------------------------------- Inner Function
     
-    public Map<String, String> callAutoOTPReq(String db_secretKey, String auth_url, String url, String params) {
+    public Map<String, Object> callAutoOTPReq(String db_secretKey, String auth_url, String url, String params) {
     	
     	// If changed, Only shown once
     	//String secretKey = "6df2d83a754a12ba";
@@ -430,16 +410,13 @@ public class AutoOTPEndpoint {
 		if(url.equals("resultUrl"))				{ apiUrl = resultUrl;}
 		if(url.equals("cancelUrl"))				{ apiUrl = cancelUrl;}
 		
-		System.out.println("AutoOTPEndpoint :: callAutoOTPReq - url [" + url + "], param [" + params + "], apiUrl [" + apiUrl + "] secretKey [" + db_secretKey + "]");
-		
 		String result = "";
 		
 		if(!apiUrl.equals("")) {
 			result = callApi("POST", apiUrl, params);
 		}
-		System.out.println("result [" + result + "]");
 
-		Map<String, String> mapResult = new HashMap<String, String>();
+		Map<String, Object> mapResult = new HashMap<String, Object>();
 		
 		// Request onetime token
 		if(url.equals("getTokenForOneTimeUrl")) {
@@ -448,8 +425,6 @@ public class AutoOTPEndpoint {
 			JsonObject data = element.getAsJsonObject().get("data").getAsJsonObject();
 			String token = data.getAsJsonObject().get("token").getAsString();
 			oneTimeToken = getDecryptAES(token, db_secretKey.getBytes());
-			
-			//System.out.println("token [" + token + "] --> oneTimeToken [" + oneTimeToken + "]");
 			
 			mapResult.put("oneTimeToken", oneTimeToken);
 		}
@@ -471,7 +446,6 @@ public class AutoOTPEndpoint {
 			if(auth.equals("Y")) {
 				// login success data
 				myInfo = getEncryptAES(dateTime + "|||" + userId, db_secretKey.getBytes());
-				System.out.println("AutoOTPEndpoint :: callAutoOTPReq - AutoOTP accept result 'Y' --> myInfo [" + dateTime + "|||" + userId + "]");
 			}
 		}
 		

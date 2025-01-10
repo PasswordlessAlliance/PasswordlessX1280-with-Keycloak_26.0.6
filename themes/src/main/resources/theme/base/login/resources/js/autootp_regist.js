@@ -19,12 +19,18 @@ var username = $("#username").val();
 var authDomain = $("#authDomain").val();
 var baseUrl = $("#baseUrl").val();
 
-if(username === undefined || username == null)		username = "";
-if(authDomain === undefined || authDomain == null)	authDomain = "";
-if(baseUrl === undefined || baseUrl == null)		baseUrl = "";
+var clientId = $("#clientId").val();
+var clientClientId = $("#clientClientId").val();
+
+if(username === undefined || username == null)				username = "";
+if(authDomain === undefined || authDomain == null)			authDomain = "";
+if(baseUrl === undefined || baseUrl == null)				baseUrl = "";
 
 if(baseUrl == "")
 	baseUrl = "javascript:alert('Home URL is not registered.');";
+
+if(clientId === undefined || clientId == null)				clientId = "";
+if(clientClientId === undefined || clientClientId == null)	clientClientId = "";
 
 var autootp_terms = 0;
 var autootp_millisec = 0;
@@ -56,9 +62,9 @@ function AutoOtpManageRestAPI() {
 	//console.log("isReg = " + isReg);
 	
 	if(isReg == "T") {
-		if(oneclick == "T" && link != "") {
-			location.href = link;
-		}
+		//if(oneclick == "T" && link != "") {
+		//	location.href = link;
+		//}
 		
 		$("#autootp_content").css("height", "200px");
 		$("#cancel_qr").css("display", "block");
@@ -77,7 +83,7 @@ function checkAutoOTPReg() {
 	
 	var data = {
 		url: "isApUrl",
-		params: "userId=" + username
+		params: "userId=" + username + "&clientId=" + clientId + "&clientClientId=" + clientClientId
 	}
 	
 	var result = callApi(data);
@@ -98,13 +104,13 @@ function moveHome() {
 	location.href = baseUrl;
 }
 
-// 해지요청
+// Request unregister
 function loginAutoOTPwithdrawal() {
 	//console.log("----- loginAutoOTPwithdrawal() -----");
 	
 	var data = {
 		url: "withdrawalApUrl",
-		params: "userId=" + username
+		params: "userId=" + username + "&clientId=" + clientId + "&clientClientId=" + clientClientId
 	}
 	
 	var result = callApi(data);
@@ -122,13 +128,13 @@ function loginAutoOTPwithdrawal() {
 	}
 }
 
-// 등록요청
+// Request register
 function loginAutoOTPJoinStart() {
 	//console.log("----- loginAutoOTPJoinStart() -----");
 	
 	var data = {
 		url: "joinApUrl",
-		params: "userId=" + username + "&name=&email="
+		params: "userId=" + username + "&name=&email=" + "&clientId=" + clientId + "&clientClientId=" + clientClientId
 	}
 	
 	var result = callApi(data);
@@ -180,7 +186,7 @@ function loginAutoOTPJoinStart() {
 	}
 }
 
-// 가입여부 확인
+// Check existing user
 function regAutoOTPRepeat() {
 	
 	//console.log("----- regAutoOTPRepeat() -----");
@@ -200,8 +206,8 @@ function regAutoOTPRepeat() {
 			
 			alert("Registration is complete.");
 			
-			if(oneclick == "T" && link != "") {
-				location.href = link;
+			if(oneclick == "T" && baseUrl != "") {
+				location.href = baseUrl;
 			}
 			else {
 				moveHome();
@@ -285,10 +291,10 @@ function callApi(data) {
 
 /*
 	- WebSocket readyState
-	  0 CONNECTING	소켓이 생성됐으나 연결은 아직 개방되지 않았습니다.
-	  1 OPEN		연결이 개방되어 통신할 수 있습니다.
-	  2 CLOSING		연결을 닫는 중입니다.
-	  3 CLOSED		연결이 닫혔거나, 개방할 수 없었습니다.
+	  0 CONNECTING
+	  1 OPEN
+	  2 CLOSING
+	  3 CLOSED
 */
 
 var qrSocket = null;

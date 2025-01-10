@@ -149,7 +149,7 @@ public class VerifyEmail implements RequiredActionProvider, RequiredActionFactor
         if(dbBrowserFlowAlias == null)
             dbBrowserFlowAlias = "";
         
-        if(dbBrowserFlowAlias.toUpperCase().indexOf("AUTOOTP") > -1)
+        if(dbBrowserFlowAlias.toUpperCase().indexOf("AUTOOTP") > -1 || dbBrowserFlowAlias.toUpperCase().indexOf("PASSWORDLESS") > -1)
             dbBrowserFlowAlias = "AUTOOTP";
 
         try {

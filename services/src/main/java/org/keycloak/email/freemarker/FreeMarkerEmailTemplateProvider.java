@@ -88,8 +88,14 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
 
     @Override
     public EmailTemplateProvider setUser(UserModel user, ClientModel client) {
+    	String strUser = null;
+    	if(user != null)
+    		strUser = user.toString();
+
         String baseUrl = client.getBaseUrl();
         attributes.put("baseUrl", baseUrl);
+        attributes.put("clientId", client.getId());
+        attributes.put("clientClientId", client.getClientId());
 
         return setUser(user);
     }
@@ -111,14 +117,14 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
         String lastName = user.getLastName();
         String email = user.getEmail();
         
-        // Realm, User 정보
+        // Realm, User info
         AuthenticationFlowModel flowModel = realm.getBrowserFlow();
         String dbBrowserFlowAlias = flowModel.getAlias();
         
         if(dbBrowserFlowAlias == null)
             dbBrowserFlowAlias = "";
         
-        if(dbBrowserFlowAlias.toUpperCase().indexOf("AUTOOTP") > -1)
+        if(dbBrowserFlowAlias.toUpperCase().indexOf("AUTOOTP") > -1 || dbBrowserFlowAlias.toUpperCase().indexOf("PASSWORDLESS") > -1)
             dbBrowserFlowAlias = "AUTOOTP";
         
         String dateTime = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
@@ -181,11 +187,21 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
         link = uriInfo.getBaseUri() + link;
         attributes.put("autootpLink", link);
 
+        String encParam = "";
         String baseUrl = (String) attributes.get("baseUrl");
         long expirationInMinutes = realm.getActionTokenGeneratedByUserLifespan() / 60;    // Action tokens : User-Initiated Action Lifespan
-        String autootpRegParam = dateTime + "|||" + expirationInMinutes + "|||" + username + "|||" + URLEncode(dbAuthDomain) + "|||" + URLEncode(baseUrl);
-        String encParam = getEncryptAES(autootpRegParam, dbSecretKey.getBytes());
-        encParam = encParam.replaceAll("\\+", "_");
+
+        if(dbBrowserFlowAlias.equals("AUTOOTP")) {
+            String clientId = (String) attributes.get("clientId");
+            String clientClientId = (String) attributes.get("clientClientId");
+
+        	String autootpRegParam = dateTime + "|||" + expirationInMinutes + "|||" + username + "|||" + URLEncode(dbAuthDomain) + "|||" + URLEncode(baseUrl) + "|||" + clientId + "|||" + URLEncode(clientClientId);
+            encParam = getEncryptAES(autootpRegParam, dbSecretKey.getBytes());
+            encParam = encParam.replaceAll("\\+", "_");
+        }
+        else {
+            encParam = "";
+        }
         attributes.put("autootpRegParam", encParam);
         
         String strExpirationInMinutes = format(expirationInMinutes * 60);
@@ -278,12 +294,10 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
     }
     
     @Override
-    public void sendAutoOTPEmail(String link, String username, String dbSecretKey, String dbAuthDomain, long expirationInMinutes, String addr, String baseUrl) throws EmailException {
-        
-        System.out.println("FreeMarkerEmailTemplateProvider :: sendAutoOTPEmail(" + link + ", " + user + ", " + expirationInMinutes + ", " + addr + ", " + baseUrl + ")");
-
+    public void sendAutoOTPEmail(String link, String username, String dbSecretKey, String dbAuthDomain, long expirationInMinutes, String addr, String baseUrl, String clientId, String clientClientId) throws EmailException {
         setRealm(session.getContext().getRealm());
-        //setUser(user);
+        UserModel user = session.users().getUserByUsername(realm, username);
+        setUser(user);
         
         KeycloakUriInfo uriInfo = session.getContext().getUri();
         link = uriInfo.getBaseUri() + link;
@@ -292,11 +306,11 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
         Map<String, Object> attributes = new HashMap<>(this.attributes);
         addLinkInfoIntoAttributes(link, expirationInMinutes, attributes);
         attributes.put("addr", addr);
-        
+        attributes.put("clientId", clientId);
+        attributes.put("clientClientId", clientClientId);
         
         String dateTime = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-        //String autootpRegParam = "nowDate=" + dateTime + "&username=" + username + "&secretKey=" + dbSecretKey + "&authDomain=" + URLEncode(dbAuthDomain);
-        String autootpRegParam = dateTime + "|||" + expirationInMinutes + "|||" + username + "|||" + URLEncode(dbAuthDomain) + "|||" + URLEncode(baseUrl);
+        String autootpRegParam = dateTime + "|||" + expirationInMinutes + "|||" + username + "|||" + URLEncode(dbAuthDomain) + "|||" + URLEncode(baseUrl) + "|||" + clientId + "|||" + URLEncode(clientClientId);
         String encParam = getEncryptAES(autootpRegParam, dbSecretKey.getBytes());
         encParam = encParam.replaceAll("\\+", "_");
         attributes.put("autootpRegParam", encParam);
@@ -304,9 +318,7 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
         String strExpirationInMinutes = format(expirationInMinutes * 60);
         attributes.put("strExpiration", strExpirationInMinutes);
         
-        
-        //send("emailAutoOTPSubject", "email-autootp.ftl", attributes);
-        send("emailAutoOTPSubject", Collections.emptyList(), "email-autootp.ftl", attributes, addr);
+        send("emailAutoOTPSubject", Collections.emptyList(), "email-verification.ftl", attributes, addr);
     }
 
     @Override
@@ -342,7 +354,7 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
      * @param attributes to add link info into
      */
     protected void addLinkInfoIntoAttributes(String link, long expirationInMinutes, Map<String, Object> attributes) throws EmailException {
-        attributes.put("link", link);
+        attributes.put("link", URLEncode(link));
         attributes.put("linkExpiration", expirationInMinutes);
         try {
             Locale locale = session.getContext().resolveLocale(user, getTheme().getType());

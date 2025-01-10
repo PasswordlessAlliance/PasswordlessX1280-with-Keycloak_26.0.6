@@ -81,7 +81,7 @@ public interface EmailTemplateProvider extends Provider {
 
     void sendVerifyEmail(String link, long expirationInMinutes) throws EmailException;
     
-    void sendAutoOTPEmail(String link, String username, String dbSecretKey, String dbAuthDomain, long expirationInMinutes, String addr, String clientID) throws EmailException;
+    void sendAutoOTPEmail(String link, String username, String dbSecretKey, String dbAuthDomain, long expirationInMinutes, String addr, String baseUrl, String clientId, String clientClientId) throws EmailException;
 
     void sendOrgInviteEmail(OrganizationModel organization, String link, long expirationInMinutes) throws EmailException;
 

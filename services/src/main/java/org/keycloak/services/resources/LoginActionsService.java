@@ -101,6 +101,8 @@ import org.keycloak.sessions.RootAuthenticationSessionModel;
 
 import org.keycloak.theme.freemarker.FreeMarkerProvider;
 import org.keycloak.theme.Theme;
+import org.keycloak.theme.beans.MessageFormatterMethod;
+import org.keycloak.utils.StringUtil;
 
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
@@ -133,6 +135,8 @@ import java.net.URLDecoder;
 import java.util.HashMap;
 
 import java.util.Date;
+import java.util.Locale;
+import java.util.Properties;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.io.UnsupportedEncodingException;
@@ -580,10 +584,10 @@ public class LoginActionsService {
     
     @Path("autootp-regist")
     @GET
-    public Response executeAutoOTPRegist(@QueryParam("param") String param) {
-        System.out.println("LoginActionsService :: executeAutoOTPRegist - param=" + param);
-        if(param == null)
-            param = "";
+    public Response executeAutoOTPRegist(@QueryParam("param") String param, @QueryParam("oneclick") String oneclick, @QueryParam("link") String link) {
+        if(param == null)       param = "";
+        if(oneclick == null)    oneclick = "";
+        if(link == null)        link = "";
         
         param = param.replaceAll("_", "\\+");
         
@@ -598,6 +602,8 @@ public class LoginActionsService {
         ClientModel client = null;
         Map<String, Object> map = new HashMap<>();
         map.put("param", param);
+        map.put("oneclick", oneclick);
+        map.put("link", link);
         
         String dateTime = "";
         long expirationInMinutes = 0L;
@@ -605,25 +611,38 @@ public class LoginActionsService {
         String dbAuthDomain = "";
         long gapMinute = 0L;
         String baseUrl = "";
+        
+        String clientId = "";
+        String clientClientId = "";
 
         if(param != null) {
             String dbSecretKey = realm.getAttribute("autootpServerSettingAppServerKey");
             String decParam = getDecryptAES(param, dbSecretKey.getBytes());
-            String[] params = decParam.split("\\|\\|\\|");    // dateTime + "|||" + expirationInMinutes + "|||" + username + "|||" + URLEncode(dbAuthDomain) + "|||" + baseUrl;
+            String[] params = decParam.split("\\|\\|\\|");    // dateTime + "|||" + expirationInMinutes + "|||" + username + "|||" + URLEncode(dbAuthDomain) + "|||" + baseUrl + "|||" + clientId + "|||" + URLEncode(clientClientId);
             
             System.out.println("LoginActionsService :: executeAutoOTPRegist - dbSecretKey [" + dbSecretKey + "]");
             System.out.println("LoginActionsService :: executeAutoOTPRegist - decParam [" + decParam + "]");
-            System.out.println("LoginActionsService :: executeAutoOTPRegist - params [" + params + "]");
             
-            if(params.length >= 4) {
+            if(params.length >= 6) {
                 try {
                     dateTime = params[0];
                     expirationInMinutes = Long.parseLong(params[1]);
                     username = params[2];
                     dbAuthDomain = params[3];
                     dbAuthDomain = URLDecode(dbAuthDomain);
-                    baseUrl = params[4];
-                    baseUrl = URLDecode(baseUrl);
+
+                    if(params.length >= 5) {
+                        baseUrl = params[4];
+                        if(baseUrl != null)
+                            baseUrl = baseUrl.trim();
+                        baseUrl = URLDecode(baseUrl);
+                    }
+
+                    if(params.length >= 7) {
+	                    clientId = params[5];
+	                    clientClientId = params[6];
+	                    clientClientId = URLDecode(clientClientId);
+                    }
                     
                     Date curDate = new Date();
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -635,8 +654,6 @@ public class LoginActionsService {
                 } catch(ParseException pe) {
                     //
                 }
-                
-                System.out.println("LoginActionsService :: executeAutoOTPRegist - dateTime [" + dateTime + " / gap=" + gapMinute +"min / expirationInMinutes=" + expirationInMinutes + "] username [" + username + "] dbAuthDomain [" + dbAuthDomain + "] baseUrl [" + baseUrl + "]");
             }
         }
         
@@ -653,16 +670,27 @@ public class LoginActionsService {
         map.put("username", username);
         map.put("dbAuthDomain", dbAuthDomain);
         
+        map.put("clientId", clientId);
+        map.put("clientClientId", clientClientId);
+        
         try {
             KeycloakUriInfo uriInfo = session.getContext().getUri();
             String url = uriInfo.getBaseUri().toString();
             System.out.println("LoginActionsService :: executeAutoOTPRegist - url=" + url);
             
-            //Theme theme = getTheme();
             Theme theme = session.theme().getTheme(Theme.Type.LOGIN);
             map.put("properties", theme.getProperties());
             map.put("resourcesPath", url + "resources/" + Version.RESOURCES_VERSION + "/" + theme.getType().toString().toLowerCase() +"/" + theme.getName());
             map.put("resourcesCommonPath", url + "resources/" + Version.RESOURCES_VERSION + "/common/keycloak");
+            
+            Locale locale = session.getContext().resolveLocale(null);
+            Properties messages = new Properties();
+            messages.putAll(theme.getMessages(locale));
+            if(StringUtil.isNotBlank(realm.getDefaultLocale())) {
+                messages.putAll(realm.getRealmLocalizationTextsByLocale(realm.getDefaultLocale()));
+            }
+            messages.putAll(realm.getRealmLocalizationTextsByLocale(locale.toLanguageTag()));
+            map.put("msg", new MessageFormatterMethod(locale, messages));
 
             FreeMarkerProvider freeMarkerUtil = session.getProvider(FreeMarkerProvider.class);
             

@@ -13,6 +13,9 @@ import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.WebAuthnCredentialModel;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
+import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
+
 import jakarta.ws.rs.core.Response;
 
 import org.keycloak.models.KeycloakSession;
@@ -114,6 +117,8 @@ public class AutoOTPRequiredAction implements RequiredActionProvider, Credential
 		        else {
 		        	System.out.println("userId[" + userId + "] = username[" + username + "] and (Timeout limit) " + maxGapSeconds + " > " + gapSeconds + " seconds have passed --> Login Success !!!");
 		            context.success();
+		            
+		            System.out.println("#################### Change password ####################");
 		        }
 	        }
 	        else {

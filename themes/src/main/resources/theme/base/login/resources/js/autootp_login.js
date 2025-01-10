@@ -209,7 +209,7 @@ function AutoOtpLoginRestAPI() {
 			$("#link_autootp_email").css("display", "block");
 		}
 	}
-	// 2-factor AutoOTP Auto
+	// 2-factor AutoOTP Auth
 	else if(login_flow == "AUTOOTP" && login_step == "2step") {
 		if(username == "") {
 			$("#login_autootp").css("display", "none");
@@ -720,7 +720,7 @@ function drawAutoOTPReg() {
 	}
 }
 
-// -------------------------------------------------- AutoOTP 해지 -------------------------------------------------
+// -------------------------------------------------- AutoOTP Unregistration -------------------------------------------------
 
 // 1-factor
 function withdrawAutoOTP() {
@@ -773,35 +773,10 @@ function loginAutoOTPwithdrawal(loginFlag) {
 
 // -------------------------------------------------- AutoOTP Email -------------------------------------------------
 
-// AutoOTP 등록/해지 Email (T:메일전송버튼노출, F:메일전송완료)
+// AutoOTP reg/unreg Email (T:Show mail-sending button, F:mail-sending completed)
 function sendAutoOTPRegEmail(flag) {
 	//console.log("----- sendAutoOTPRegEmail() -----");
 	
-	/*
-	if(login_step == "2step" && flag == "T") {
-		autootp_2step_login = true;
-		LoginCancel("T");
-		$("#kc-login").val(AutoOTPSignIn);
-	}
-	
-	var userId = $("#username").val();
-	var data = {
-		url: "sendEmail",
-		params: "userId=" + userId + "&base_url=" + base_url
-	}
-	
-	var result = JSON.stringify(callApi(data));
-	console.log(result);
-	var jsonResult = JSON.parse(result);
-	var msg = jsonResult.result.msg;
-	var code = jsonResult.result.code;
-	console.log("msg=" + msg + ", code=" + code);
-	
-	if(page_set == "autootp" && login_flow == "AUTOOTP" && login_step == "2step" && username != "") {
-		alert(AutoOTPEmailSent);
-	}
-	*/
-
 	if(login_step == "2step" && flag == "T") {
 		LoginCancel("T");
 		$("#autoOtpLogin").css("display", "none");
@@ -809,9 +784,10 @@ function sendAutoOTPRegEmail(flag) {
 	}
 
 	var userId = $("#username").val();
+	var login_clientId = $("#login_clientId").val();
 	var data = {
 		url: "sendEmail",
-		params: "userId=" + userId + "&base_url=" + base_url
+		params: "userId=" + userId + "&clientId=" + login_clientId + "&base_url=" + base_url
 	}
 	
 	if(login_step == "1step" || flag == "F") {
@@ -834,6 +810,14 @@ function sendAutoOTPRegEmail(flag) {
 }
 
 // -------------------------------------------------- WebSocket -------------------------------------------------
+
+/*
+	- WebSocket readyState
+	  0 CONNECTING
+	  1 OPEN
+	  2 CLOSING
+	  3 CLOSED
+*/
 
 var qrSocket = null;
 
