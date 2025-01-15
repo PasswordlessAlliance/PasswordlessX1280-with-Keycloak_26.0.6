@@ -105,6 +105,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -117,6 +118,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Properties;
 
 //import static org.keycloak.utils.LockObjectsForModification.lockUserSessionsForModification;
 
@@ -174,9 +176,16 @@ public class AutoOTPEndpoint {
         }
 
         formParams = formParameters;
-        //grantType = formParams.getFirst(OIDCLoginProtocol.GRANT_TYPE_PARAM);
-        grantType = "client_credentials";
         
+        try (InputStream is = AutootpPolicyEndpoint.class.getResourceAsStream("/org/keycloak/autootp.properties")) {
+            Properties props = new Properties();
+            props.load(is);
+            grantType = props.getProperty("grantType");
+
+        } catch (IOException e) {
+        	e.printStackTrace();
+        }
+
     	List<String> listUrl = (List<String>) formParams.get("url");
     	List<String> listParams = (List<String>) formParams.get("params");
     	
