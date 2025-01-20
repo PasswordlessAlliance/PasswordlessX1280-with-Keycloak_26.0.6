@@ -247,19 +247,15 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
             autootp_info = arrAutoOTPInfo[0];
             autootp_info = autootp_info.trim();
             
-            System.out.println("AbstractUsernameFormAuthenticator :: validatePassword autootp_info [" + autootp_info + "]");
-            
             login_step = context.getRealm().getAttribute("autootpAppSettingStep");
             dbSecretKey = context.getRealm().getAttribute("autootpServerSettingAppServerKey");
             autootp_info = getDecryptAES(autootp_info, dbSecretKey.getBytes());
             
             if(autootp_info != null) {
                 String[] arrInfo = autootp_info.split("\\|\\|\\|");    // dateTime + "|||" + username
-                if(arrInfo.length == 2) {
+                if(arrInfo.length >= 2) {
                     dateTime = arrInfo[0];
                     username = arrInfo[1];
-
-                    System.out.println("AbstractUsernameFormAuthenticator :: validatePassword autootp_info --> [" + dateTime + "] [" + username + "]");
 
                     Date curDate = new Date();
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -277,18 +273,18 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
             gapSeconds = 0;
         }
 
-        System.out.println("AbstractUsernameFormAuthenticator :: validatePassword login_flow [" + login_flow + "] login_step [" + login_step + "] page_set [" + page_set + "] dateTime [" + dateTime + " / " + gapSeconds + "sec] username [" + username + "] <-- userId [" + userId + "]");
+        System.out.println("AbstractUsernameFormAuthenticator :: validatePassword - login_flow [" + login_flow + "] login_step [" + login_step + "] page_set [" + page_set + "] dateTime [" + dateTime + " / " + gapSeconds + "sec] username [" + username + "] <-- userId [" + userId + "]");
         
         //if(page_set.equals("login") && login_flow.toUpperCase().equals("AUTOOTP") && login_step.equals("1step") && autootp_login_btn.equals("Cancel AutoOTP Sign In")) {
         if(page_set.equals("login") && login_flow.toUpperCase().equals("AUTOOTP") && login_step.equals("1step")) {
             if(!username.equals(userId)) {
-                System.out.println("username does not match [" + username + "] [" + userId + "] --> Login Failed !!!");
+                System.out.println("AbstractUsernameFormAuthenticator :: validatePassword - username does not match >>> username [" + username + "] <---> userId [" + userId + "] --> Login Failed !!!");
             }
             else if(gapSeconds > maxGapSeconds) {
-                System.out.println(gapSeconds + " seconds have passed since AutoOTP authentication. --> Login Failed !!!");
+                System.out.println("AbstractUsernameFormAuthenticator :: validatePassword - " + gapSeconds + " seconds have passed since AutoOTP authentication. --> Login Failed !!!");
             }
             else {
-                System.out.println("Login Success !!!");
+                System.out.println("AbstractUsernameFormAuthenticator :: validatePassword - Login Success !!!");
                 return true;
             }
         }

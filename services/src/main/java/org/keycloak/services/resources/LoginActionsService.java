@@ -620,9 +620,6 @@ public class LoginActionsService {
             String decParam = getDecryptAES(param, dbSecretKey.getBytes());
             String[] params = decParam.split("\\|\\|\\|");    // dateTime + "|||" + expirationInMinutes + "|||" + username + "|||" + URLEncode(dbAuthDomain) + "|||" + baseUrl + "|||" + clientId + "|||" + URLEncode(clientClientId);
             
-            System.out.println("LoginActionsService :: executeAutoOTPRegist - dbSecretKey [" + dbSecretKey + "]");
-            System.out.println("LoginActionsService :: executeAutoOTPRegist - decParam [" + decParam + "]");
-            
             if(params.length >= 6) {
                 try {
                     dateTime = params[0];
@@ -658,7 +655,7 @@ public class LoginActionsService {
         }
         
         if(gapMinute > expirationInMinutes) {
-            System.out.println("LoginActionsService :: executeAutoOTPRegist - expired !!!");
+            System.out.println("LoginActionsService :: executeAutoOTPRegist - Regist QRCode has been expired !!!");
             username = "";
             dbAuthDomain = "";
         }
@@ -676,7 +673,6 @@ public class LoginActionsService {
         try {
             KeycloakUriInfo uriInfo = session.getContext().getUri();
             String url = uriInfo.getBaseUri().toString();
-            System.out.println("LoginActionsService :: executeAutoOTPRegist - url=" + url);
             
             Theme theme = session.theme().getTheme(Theme.Type.LOGIN);
             map.put("properties", theme.getProperties());

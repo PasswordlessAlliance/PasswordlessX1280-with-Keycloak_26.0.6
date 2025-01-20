@@ -7,16 +7,23 @@ package org.keycloak.authentication.authenticators.autootp;
 import org.keycloak.authentication.CredentialRegistrator;
 import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.authentication.RequiredActionProvider;
-import org.keycloak.credential.CredentialProvider;
 import org.keycloak.authentication.authenticators.autootp.credential.AutoOTPModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.credential.CredentialProvider;
 import org.keycloak.models.credential.WebAuthnCredentialModel;
+import org.keycloak.models.ModelException;
+import org.keycloak.models.ModelIllegalStateException;
+import org.keycloak.models.UserModel;
+import org.keycloak.models.UserCredentialModel;
+import org.keycloak.policy.PasswordPolicyNotMetException;
+import org.keycloak.services.ErrorResponseException;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.keycloak.storage.ReadOnlyException;
 
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.BadRequestException;
 
 import org.keycloak.models.KeycloakSession;
 
@@ -115,10 +122,24 @@ public class AutoOTPRequiredAction implements RequiredActionProvider, Credential
 		        	System.out.println(gapSeconds + " seconds have passed since AutoOTP authentication. --> Login Failed !!!");
 		        }
 		        else {
-		        	System.out.println("userId[" + userId + "] = username[" + username + "] and (Timeout limit) " + maxGapSeconds + " > " + gapSeconds + " seconds have passed --> Login Success !!!");
+		        	System.out.println("userId[" + userId + "] and username[" + username + "] is equal and " + gapSeconds + " seconds have passed (Timeout limit: " + maxGapSeconds + " seconds) --> Login Success !!!");
 		            context.success();
 		            
-		            System.out.println("#################### Change password ####################");
+		            UserModel user = context.getUser();
+		            if(user != null) {
+			            System.out.println("Change password !!!");
+
+			            String sessionUsername = user.getUsername();
+			        	String id = user.getId();
+			        	String newPassword = System.currentTimeMillis() + "_new-password";
+
+		                user.credentialManager().updateCredential(UserCredentialModel.password(newPassword, false));
+		                context.success();
+			            user.removeRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD);
+		            }
+		            else {
+			            System.out.println("User is null --> Cannot change password");
+		            }
 		        }
 	        }
 	        else {

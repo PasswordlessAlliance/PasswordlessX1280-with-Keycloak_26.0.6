@@ -16,19 +16,15 @@ import java.io.IOException;
  * @version $Revision: 1 $
  */
 public class AutoOTPModel extends CredentialModel {
-    public static final String TYPE = "AUTOOTP (Type)";
+    public static final String TYPE = "AUTOOTP";
 
     private final AutoOTPData autoOTPData;
 
     private AutoOTPModel(AutoOTPData autoOTPData) {
-    	System.out.println(">>>>>>>>>>>>>>>>>>>>> AutoOTPModel(AutoOTPData autoOTPData)");
-    	
         this.autoOTPData = autoOTPData;
     }
     
     public static AutoOTPModel createFromCredentialModel(CredentialModel credentialModel){
-    	System.out.println(">>>>>>>>>>>>>>>>>>>>> createFromCredentialModel");
-    	
         try {
             AutoOTPData autoOTPData = JsonSerialization.readValue(credentialModel.getCredentialData(), AutoOTPData.class);
 
@@ -49,14 +45,10 @@ public class AutoOTPModel extends CredentialModel {
     }
 
     public AutoOTPData getAutoOTPData() {
-    	System.out.println(">>>>>>>>>>>>>>>>>>>>> getAutoOTPData");
-    	
         return autoOTPData;
     }
 
     private void fillCredentialModelFields(){
-    	System.out.println(">>>>>>>>>>>>>>>>>>>>> fillCredentialModelFields");
-    	
     	/*
         try {
             setCredentialData(JsonSerialization.writeValueAsString(credentialData));
