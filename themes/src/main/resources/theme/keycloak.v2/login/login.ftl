@@ -34,12 +34,14 @@
                     <input type="hidden" id="FailedUnregister" name="FailedUnregister" value='${msg("FailedUnregister")}'>
                     <input type="hidden" id="AutoOTPQRExpired" name="AutoOTPQRExpired" value='${msg("AutoOTPQRExpired")}'>
                     <input type="hidden" id="RegistrationCompleted" name="RegistrationCompleted" value='${msg("RegistrationCompleted")}'>
+                    <input type="hidden" id="UnregistratedCompleted" name="UnregistratedCompleted" value='${msg("UnregistratedCompleted")}'>
                     <input type="hidden" id="AutoOTPAccountStopped" name="AutoOTPAccountStopped" value='${msg("AutoOTPAccountStopped")}'>
                     <input type="hidden" id="ContactYourAccountManager" name="ContactYourAccountManager" value='${msg("ContactYourAccountManager")}'>
                     <input type="hidden" id="ThisAccountNotRegistered" name="ThisAccountNotRegistered" value='${msg("ThisAccountNotRegistered")}'>
                     <input type="hidden" id="RegisterAutoOTPAccountFirst" name="RegisterAutoOTPAccountFirst" value='${msg("RegisterAutoOTPAccountFirst")}'>
                     <input type="hidden" id="CancelAutoOTPSignIn" name="CancelAutoOTPSignIn" value='${msg("CancelAutoOTPSignIn")}'>
                     <input type="hidden" id="YourAutoOTPAccountNotRegistered" name="YourAutoOTPAccountNotRegistered" value='${msg("YourAutoOTPAccountNotRegistered")}'>
+                    <input type="hidden" id="AuthenticationDenied" name="AuthenticationDenied" value='${msg("AuthenticationDenied")}'>
                     
                     <#if !usernameHidden??>
                         <div class="${properties.kcFormGroupClass!}">

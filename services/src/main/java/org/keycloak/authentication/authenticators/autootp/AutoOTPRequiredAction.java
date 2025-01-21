@@ -84,6 +84,7 @@ public class AutoOTPRequiredAction implements RequiredActionProvider, Credential
         String autootpInfo = "";
         String username = "";
         String dateTime = "";
+        String QRReg = "";
         long gapSeconds = 0;
         
         long maxGapSeconds = 10;
@@ -95,6 +96,14 @@ public class AutoOTPRequiredAction implements RequiredActionProvider, Credential
         	
 	        hiddenUsername = (context.getHttpRequest().getDecodedFormParameters().getFirst("hidden_username"));
 	        autootpInfo = (context.getHttpRequest().getDecodedFormParameters().getFirst("autootp_info"));
+	        QRReg = (context.getHttpRequest().getDecodedFormParameters().getFirst("QRReg"));
+	        
+	        if(userId == null)			userId = "";
+	        if(login_step == null)		login_step = "";
+	        if(dbSecretKey == null)		dbSecretKey = "";
+	        if(hiddenUsername == null)	hiddenUsername = "";
+	        if(autootpInfo == null)		autootpInfo = "";
+	        if(QRReg == null)			QRReg = "";
 	        
 	        if(autootpInfo != null && !autootpInfo.equals("")) {
 	        	String tmpInfo = getDecryptAES(autootpInfo, dbSecretKey.getBytes());
@@ -112,7 +121,7 @@ public class AutoOTPRequiredAction implements RequiredActionProvider, Credential
         		}
         	}
 	        
-	        System.out.println("login_step [" + login_step + "] userId [" + userId + "] hiddenUsername [" + hiddenUsername + "] autootpInfo [" + autootpInfo + "] dateTime [" + dateTime + " / " + gapSeconds + "sec] username [" + username + "]");
+	        //System.out.println("login_step [" + login_step + "] userId [" + userId + "] hiddenUsername [" + hiddenUsername + "] autootpInfo [" + autootpInfo + "] dateTime [" + dateTime + " / " + gapSeconds + "sec] username [" + username + "] QRReg [" + QRReg + "]");
 	        
 	        if(login_step.equals("1step") || login_step.equals("2step")) {
 		        if(!username.equals(userId)) {
@@ -127,7 +136,7 @@ public class AutoOTPRequiredAction implements RequiredActionProvider, Credential
 		            
 		            UserModel user = context.getUser();
 		            if(user != null) {
-			            System.out.println("Change password !!!");
+			            System.out.println("Login - Change password !!!");
 
 			            String sessionUsername = user.getUsername();
 			        	String id = user.getId();

@@ -49,6 +49,14 @@
 		<input type="hidden" id="link" name="link" value="${link}">
 		<input type="hidden" id="clientId" name="clientId" value="${clientId}">
 		<input type="hidden" id="clientClientId" name="clientClientId" value="${clientClientId}">
+		
+		<input type="hidden" id="RegistrationCompleted" name="RegistrationCompleted" value='${msg("RegistrationCompleted")}'>
+		<input type="hidden" id="HomeURLIsNotRegistered" name="HomeURLIsNotRegistered" value='${msg("HomeURLIsNotRegistered")}'>
+		<input type="hidden" id="RegistrationHasBeenCanceled" name="RegistrationHasBeenCanceled" value='${msg("RegistrationHasBeenCanceled")}'>
+		<input type="hidden" id="PleaseTryAgainLater" name="PleaseTryAgainLater" value='${msg("PleaseTryAgainLater")}'>
+		<input type="hidden" id="AutoOTPQRExpired" name="AutoOTPQRExpired" value='${msg("AutoOTPQRExpired")}'>
+		<input type="hidden" id="NoResultsWereFound" name="NoResultsWereFound" value='${msg("NoResultsWereFound")}'>
+		<input type="hidden" id="AreYouSureYouWantToUnregisterAutoOTP" name="AreYouSureYouWantToUnregisterAutoOTP" value='${msg("AreYouSureYouWantToUnregisterAutoOTP")}'>
 
 	    <div id="kc-header" class="${properties.kcHeaderClass!}">
 	        <div id="kc-header-wrapper" class="${properties.kcHeaderWrapperClass!}">${realm.displayNameHtml}</div>

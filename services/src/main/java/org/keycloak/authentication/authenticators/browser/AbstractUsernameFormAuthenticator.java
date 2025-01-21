@@ -273,9 +273,8 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
             gapSeconds = 0;
         }
 
-        System.out.println("AbstractUsernameFormAuthenticator :: validatePassword - login_flow [" + login_flow + "] login_step [" + login_step + "] page_set [" + page_set + "] dateTime [" + dateTime + " / " + gapSeconds + "sec] username [" + username + "] <-- userId [" + userId + "]");
+        //System.out.println("AbstractUsernameFormAuthenticator :: validatePassword - login_flow [" + login_flow + "] login_step [" + login_step + "] page_set [" + page_set + "] dateTime [Req " + dateTime + " sec / Gap " + gapSeconds + "sec] username [" + username + "] <-- userId [" + userId + "]");
         
-        //if(page_set.equals("login") && login_flow.toUpperCase().equals("AUTOOTP") && login_step.equals("1step") && autootp_login_btn.equals("Cancel AutoOTP Sign In")) {
         if(page_set.equals("login") && login_flow.toUpperCase().equals("AUTOOTP") && login_step.equals("1step")) {
             if(!username.equals(userId)) {
                 System.out.println("AbstractUsernameFormAuthenticator :: validatePassword - username does not match >>> username [" + username + "] <---> userId [" + userId + "] --> Login Failed !!!");
@@ -284,7 +283,7 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
                 System.out.println("AbstractUsernameFormAuthenticator :: validatePassword - " + gapSeconds + " seconds have passed since AutoOTP authentication. --> Login Failed !!!");
             }
             else {
-                System.out.println("AbstractUsernameFormAuthenticator :: validatePassword - Login Success !!!");
+                //System.out.println("AbstractUsernameFormAuthenticator :: validatePassword - Login Success !!!");
                 return true;
             }
         }

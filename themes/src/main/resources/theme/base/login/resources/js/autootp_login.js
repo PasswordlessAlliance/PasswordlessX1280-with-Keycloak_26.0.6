@@ -5,17 +5,21 @@ var doTryAgain = $("#doTryAgain").val();
 var FailedUnregister = $("#FailedUnregister").val();
 var AutoOTPQRExpired = $("#AutoOTPQRExpired").val();
 var RegistrationCompleted = $("#RegistrationCompleted").val();
+var UnregistratedCompleted = $("#UnregistratedCompleted").val();
 var AutoOTPAccountStopped = $("#AutoOTPAccountStopped").val();
 var ContactYourAccountManager = $("#ContactYourAccountManager").val();
 var ThisAccountNotRegistered = $("#ThisAccountNotRegistered").val();
 var YourAutoOTPAccountNotRegistered = $("#YourAutoOTPAccountNotRegistered").val();
 var RegisterAutoOTPAccountFirst = $("#RegisterAutoOTPAccountFirst").val();
 var CancelAutoOTPSignIn = $("#CancelAutoOTPSignIn").val();
+var AuthenticationDenied = $("#AuthenticationDenied").val();
 
 // AutoOTP accept wait time (seconds)
 MaxTime = 60
 var autootp_2step_login = false;
 var login_url = "";
+var websocket_status = 0;  // 0:disconnected, 1:connected
+var checkType = "";
 
 var base_url = $("#base_url").val();
 if(base_url !== undefined && base_url != null && base_url != "") {
@@ -46,6 +50,7 @@ var login_flow = $("#login_flow").val();
 if(login_flow === undefined || login_flow == null)				login_flow = "";
 
 var autootp_millisec = 0;
+var check_millisec = 0;
 var autootp_term = 0;
 var servicePassword = "";
 var pushConnectorUrl = "";
@@ -140,6 +145,8 @@ function parseParams() {
 
 function AutoOtpLoginRestAPI() {
 	
+	checkType = "LOGIN";
+	
 	parseParams();
 
 	// Preset for AutoOTP Login & Configuration
@@ -165,7 +172,6 @@ function AutoOtpLoginRestAPI() {
 			var tmp_autootp_info = $("#autootp_info").val();
 			var autootp_info = window.localStorage.getItem('info_autootp');
 			if(autootp_info !== undefined && autootp_info != null && autootp_info != "") {
-				//console.log("autootp_info [" + tmp_autootp_info + "] --> [" + autootp_info + "]");
 				$("#autootp_info").val(autootp_info);
 				window.localStorage.removeItem('info_autootp');
 			}
@@ -176,17 +182,6 @@ function AutoOtpLoginRestAPI() {
 			}
 
 			if(autootp_conf == "proc") {
-				/*
-				$("#kc-form-wrapper").css("display", "block");
-				var isReg = checkAutoOTPReg();
-				if(isReg == "T") {
-					withdrawAutoOTP();
-					//loginAutoOTPwithdrawal("F")
-				}
-				else {
-					regAutoOTP();
-				}
-				*/
 				$("#txt_autootp_email").css("display", "block");
 				setTimeout(() => sendAutoOTPRegEmail("F"), 100);
 				setTimeout(() => $("#txt_autootp_email").html(AutoOTPEmailSent + "<br>&nbsp;"), 200);
@@ -270,6 +265,8 @@ function cancelLoginAutoOTPconfigure() {
 
 // 1-Factor
 function AutoOTPLogin() {
+	checkType = "LOGIN";
+	
 	$("#autootp_login_btn").blur();
 	sessionId = window.localStorage.getItem('session_id');
 
@@ -373,12 +370,12 @@ function loginAutoOTPStart(token) {
 		
 		var today = new Date();
 		autootp_millisec = today.getTime();
+		check_millisec = today.getTime();
 		autootp_term = parseInt(term - 1);
 		//console.log("term=" + term + ", servicePassword=" + servicePassword);
 		
-		drawAutoOTP();
-		//loginAutoOTPRepeat();
 		connWebSocket();
+		drawAutoOTP();
 	}
 	else if(code == "200.6") {
 		sessionId = window.localStorage.getItem('session_id');
@@ -417,53 +414,43 @@ function loginAutoOTPStart(token) {
 }
 
 // Request accept result
-function loginAutoOTPRepeat() {
-	//console.log("----- loginAutoOTPRepeat() -----");
+function loginAutoOTPResult() {
+	//console.log("----- loginAutoOTPResult() -----");
 	
-	var today = new Date();
-	var now_millisec = today.getTime();
-	var gap_millisec = now_millisec - autootp_millisec;
+	var userId = $("#username").val();
+	var data = {
+		url: "resultUrl",
+		params: "userId=" + userId + "&sessionId=" + sessionId
+	}
 	
-	if(gap_millisec < autootp_term * 1000 - 1000) {
+	var result = callApi(data);
+	var jsonResult = JSON.parse(result.result);
+	var autootpInfo = result.autootpInfo;
+	
+	$("#autootp_info").val(autootpInfo);
+	
+	var code = jsonResult.code;
+	var auth = jsonResult.data.auth;
+	
+	if(code == "000" || code == "000.0") {
 		
-		var userId = $("#username").val();
-		var data = {
-			url: "resultUrl",
-			params: "sessionId=" + sessionId
-		}
-		
-		var result = callApi(data);
-		var jsonResult = JSON.parse(result.result);
-		var autootpInfo = result.autootpInfo;
-		
-		$("#autootp_info").val(autootpInfo);
-		
-		var code = jsonResult.code;
-		var auth = jsonResult.data.auth;
-		
-		if(code == "000" || code == "000.0") {
+		if(auth == "Y") {
+			clearTimeout(timeoutId1);
+			clearTimeout(timeoutId2);
+			window.localStorage.removeItem('session_id');
+			//console.log("STOP ---> AutoOTP confirmed !!!");
 			
-			if(auth == "Y") {
-				clearTimeout(timeoutId1);
-				clearTimeout(timeoutId2);
-				window.localStorage.removeItem('session_id');
-				//console.log("STOP ---> AutoOTP confirmed !!!");
-				
-				loginOk();
-			}
-			else if(auth == "N") {
-				LoginCancel("F");
-				clearTimeout(timeoutId1);
-				clearTimeout(timeoutId2);
-				window.localStorage.removeItem('session_id');
-				//console.log("STOP ---> AutoOTP canceled !!!");
-				
-				alert("Authentication denied.");
-				moveBack();
-			}
-			else {
-				timeoutId1 = setTimeout(loginAutoOTPRepeat, 1500);
-			}
+			loginOk();
+		}
+		else if(auth == "N") {
+			LoginCancel("F");
+			clearTimeout(timeoutId1);
+			clearTimeout(timeoutId2);
+			window.localStorage.removeItem('session_id');
+			//console.log("STOP ---> AutoOTP canceled !!!");
+			
+			alert(AuthenticationDenied);
+			moveBack();
 		}
 	}
 }
@@ -483,13 +470,11 @@ function drawAutoOTP() {
 		
 		$("#autootp_bar").css("width", ratio + "%");
 		$("#autootp_num").text(tmpPassword);
-		
-		if(qrSocket != null) {
-			//console.log("[" + today.getTime() + "] qrSocket state=" + qrSocket.readyState);
-			if(qrSocket.readyState != qrSocket.OPEN) {
-				//console.log("WebSocket closed --> change [POLLING]");
-				qrSocket = null;
-				loginAutoOTPRepeat();
+
+		if(websocket_status == 0) {
+			if(now_millisec - check_millisec > 1500) {
+				check_millisec = now_millisec;
+				loginAutoOTPResult();
 			}
 		}
 		
@@ -504,6 +489,8 @@ function drawAutoOTP() {
 }
 
 function CancelLogin() {
+	websocketClose();
+	
 	if(login_step == "2step" && autootp_2step_login) {
 		// login after sending email
 		$("#kc-login").val("Cancel Login");
@@ -596,63 +583,6 @@ function moveHome() {
 function regAutoOTP() {
 	$("#autoOtpLogin").css("display", "none");
 	$("#send_email").css("display", "block");
-
-	/*
-	$("#reg_qr").css("display", "block");
-	var username = $("#hidden_username").val();
-	
-	var data = {
-		url: "joinApUrl",
-		params: "userId=" + username
-	}
-	
-	var result = callApi(data);
-	console.log(result);
-	jsonResult = JSON.parse(result.result);
-	
-	var code = jsonResult.code;
-	if(code == "000" || code == "000.0") {
-		var data = jsonResult.data;
-		var qr = data.qr;
-		var corpId = data.corpId;
-		var registerKey = data.registerKey;
-		var terms = data.terms;
-		var serverUrl = data.serverUrl;
-		var userId = data.userId;
-		
-		pushConnectorUrl = data.pushConnectorUrl;
-		pushConnectorToken = data.pushConnectorToken;
-		
-		console.log("qr [" + qr + "]");
-		console.log("corpId [" + corpId + "]");
-		console.log("registerKey [" + registerKey + "]");
-		console.log("terms [" + terms + "]");
-		console.log("serverUrl [" + serverUrl + "]");
-		console.log("userId [" + userId + "]");
-		console.log("url [" + pushConnectorUrl + "]");
-		
-		$("#qr").prop("src", qr);
-		//$("#qr").css("display", "block");
-		
-		//$("#server_url").html(serverUrl);
-		//$("#corp_id").html(corpId);
-		$("#user_id").html(userId);
-		
-		var today = new Date();
-		autootp_millisec = today.getTime();
-		autootp_terms = parseInt(terms - 1);
-		
-		qrSocket = null;
-		drawAutoOTPReg();
-		//regAutoOTPRepeat();
-		connWebSocket();
-	}
-	else {
-		alert(doTryAgain);
-		
-		moveBack();
-	}
-	*/
 }
 
 function regAutoOTPRepeat() {
@@ -663,7 +593,7 @@ function regAutoOTPRepeat() {
 	var now_millisec = today.getTime();
 	var gap_millisec = now_millisec - autootp_millisec;
 	
-	if(gap_millisec < autootp_terms * 1000) {
+	if(gap_millisec < autootp_term * 1000) {
 		
 		var isReg = checkAutoOTPReg();
 		//console.log("isReg = " + isReg);
@@ -686,10 +616,10 @@ function drawAutoOTPReg() {
 	var today = new Date();
 	var gap_second = Math.ceil((today.getTime() - autootp_millisec) / 1000);
 	
-	if(gap_second < autootp_terms) {
+	if(gap_second < autootp_term) {
 	
-		var tmp_min = parseInt((autootp_terms - gap_second) / 60);
-		var tmp_sec = parseInt((autootp_terms - gap_second) % 60);
+		var tmp_min = parseInt((autootp_term - gap_second) / 60);
+		var tmp_sec = parseInt((autootp_term - gap_second) % 60);
 		
 		if(tmp_min == 0 && tmp_sec == 1)
 			tmp_sec = "00";
@@ -698,14 +628,8 @@ function drawAutoOTPReg() {
 			
 		$("#rest_time").html(tmp_min + " : " + tmp_sec);
 		
-		if(qrSocket != null) {
-			//console.log("[" + today.getTime() + "] qrSocket state=" + qrSocket.readyState);
-			if(qrSocket.readyState != qrSocket.OPEN) {
-				//console.log("WebSocket closed --> change [POLLING]");
-				qrSocket = null;
-				regAutoOTPRepeat();
-			}
-		}
+		if(websocket_status == 0)
+			regAutoOTPRepeat();
 		
 		timeoutId2 = setTimeout(drawAutoOTPReg, 100);
 	}
@@ -717,6 +641,20 @@ function drawAutoOTPReg() {
 		
 		setTimeout(() => alert(AutoOTPQRExpired), 100);
 		setTimeout(() => moveBack(), 200);
+	}
+}
+
+function regPasswordlessOK() {
+	var isReg = checkAutoOTPReg();
+	//console.log("isReg = " + isReg);
+		
+	if(isReg == "T") {
+		clearTimeout(timeoutId1);
+		clearTimeout(timeoutId2);
+		
+		alert(RegistrationCompleted);
+		
+		moveBack();
 	}
 }
 
@@ -757,7 +695,7 @@ function loginAutoOTPwithdrawal(loginFlag) {
 		
 		var code = jsonResult.code;
 		if(code == "000" || code == "000.0") {
-			alert("Unregistrated completed.");
+			alert(UnregistratedCompleted);
 			moveBack();
 		}
 		else {
@@ -819,34 +757,75 @@ function sendAutoOTPRegEmail(flag) {
 	  3 CLOSED
 */
 
-var qrSocket = null;
+var socketConn = null;
+var socketResult = null;
+
+function websocketConnect() {
+	websocket_status = 1;
+}
+
+function websocketClose() {
+	websocket_status = 0;
+	
+	if(socketConn != null)
+		socketConn.close();
+}
 
 function connWebSocket() {
 
-	qrSocket = new WebSocket(pushConnectorUrl);
+	socketConn = new WebSocket(pushConnectorUrl);
 
-	qrSocket.onopen = function(e) {
-		var send_msg = '{"pushConnectorToken":"' + pushConnectorToken + '"}';
-		try {
-			qrSocket.send(send_msg);
-		} catch(err) {
-			//console.log(err);
-		}
+	socketConn.onopen = function(e) {
+		console.log("######## WebSocket Connected ########");
+		var send_msg = '{"type":"hand","pushConnectorToken":"' + pushConnectorToken + '"}';
+		console.log("url [" + pushConnectorUrl + "]");
+		console.log("send [" + send_msg + "]");
+		socketConn.send(send_msg);
+
+		websocketConnect();
 	}
 
-	qrSocket.onmessage = async function (event) {
+	socketConn.onmessage = async function (event) {
+		console.log("######## WebSocket Data received [" + socketConn.readyState + "] ########");
+		
 		try {
-			if (event !== undefined && event != null) {
-				result = await JSON.parse(event.data);
+			if (event !== null && event !== undefined) {
+				socketResult = await JSON.parse(event.data);
+				console.log("result [" + event.data + "]");
+				if(socketResult.type == "result") {
+					if(checkType == "LOGIN")
+						loginAutoOTPResult();
+					else if(checkType == "QR")
+						regPasswordlessOK();
+				}
 			}
 		} catch (err) {
-			//console.log(err);
+			console.log(err);
 		}
 	}
 
-	qrSocket.conclose = function(event) {
+	socketConn.conclose = function(event) {
+		if(event.wasClean)
+			console.log("######## WebSocket Disconnected - OK !!! [" + socketConn.readyState + "] ########");
+		else
+			console.log("######## WebSocket Disconnected - Error !!! [" + socketConn.readyState + "] ########");
+
+		console.log("=================================================");
+		console.log(event);
+		console.log("=================================================");
+
+		websocketClose();
 	}
 
-	qrSocket.onerror = function(error) {
+	socketConn.onerror = function(error) {
+		console.log("######## WebSocket Error !!! [" + socketConn.readyState + "] ########");
+		console.log("=================================================");
+		console.log(error);
+		console.log("=================================================");
+
+		$("#login_mobile_check").show();
+		$("#reg_mobile_check").show();
+
+		websocketClose();
 	}
 }

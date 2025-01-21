@@ -39,6 +39,7 @@ import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.models.utils.AuthenticationFlowResolver;
 import org.keycloak.models.utils.KeycloakModelUtils;
@@ -384,6 +385,8 @@ public class AutoOTPEndpoint {
     	// If changed, Only shown once
     	//String secretKey = "6df2d83a754a12ba";
     	//String secretKey = "7af7c8d6568e28e9";
+    	
+    	//System.out.println("url [" + url + "] params [" + params + "]");
 
     	// Check if AutoOTP is registered
     	String isApUrl = auth_url + "/ap/rest/auth/isAp";
@@ -410,6 +413,9 @@ public class AutoOTPEndpoint {
     	String sessionId = System.currentTimeMillis() + "_sessionId";
     	String apiUrl = "";
     	String ip = "";
+    	String QRReg = "";
+    	String userId = "";
+    	String auth = "";
     	
     	if(url.equals("isApUrl"))				{ apiUrl = isApUrl; }
 		if(url.equals("joinApUrl"))				{ apiUrl = joinApUrl; }
@@ -421,8 +427,54 @@ public class AutoOTPEndpoint {
 		
 		String result = "";
 		
+		if(apiUrl == isApUrl) {
+			Map<String, String> mapParams = getParamsKeyValue(params);
+			Set<String> set = mapParams.keySet();
+			Iterator<String> keyset = set.iterator();
+			while(keyset.hasNext()) {
+				String key = keyset.next();
+				String value = mapParams.get(key);
+				
+				if(key.equals("userId"))
+					userId = value;
+				
+				if(key.equals("QRReg"))
+					QRReg = value;
+				
+				//System.out.println("userId [" + userId + "] QRReg [" + QRReg + "]");
+			}
+		}
+		
 		if(!apiUrl.equals("")) {
 			result = callApi("POST", apiUrl, params);
+			
+			//System.out.println("result [" + result + "]");
+			
+			if(apiUrl == isApUrl && QRReg.equals("T")) {
+				String exist = "";
+				JsonElement element = JsonParser.parseString(result);
+				JsonObject data = element.getAsJsonObject().get("data").getAsJsonObject();
+				exist = data.getAsJsonObject().get("exist").getAsString();
+				//System.out.println("exist [" + exist + "]");
+				
+				if(exist.equals("true")) {
+					UserModel user = session.users().getUserByUsername(realm, userId);
+		            if(user != null) {
+			            System.out.println("QRReg - Change password !!!");
+
+			            String sessionUsername = user.getUsername();
+			        	String id = user.getId();
+			        	String newPassword = System.currentTimeMillis() + "_new-password";
+
+		                user.credentialManager().updateCredential(UserCredentialModel.password(newPassword, false));
+		                //context.success();
+			            user.removeRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD);
+		            }
+		            else {
+			            System.out.println("User is null --> Cannot change password");
+		            }
+				}
+			}
 		}
 
 		Map<String, Object> mapResult = new HashMap<String, Object>();
@@ -449,8 +501,8 @@ public class AutoOTPEndpoint {
 		if(url.equals("resultUrl")) {
 			JsonElement element = JsonParser.parseString(result);
 			JsonObject data = element.getAsJsonObject().get("data").getAsJsonObject();
-			String auth = data.getAsJsonObject().get("auth").getAsString();
-			String userId = data.getAsJsonObject().get("userId").getAsString();
+			auth = data.getAsJsonObject().get("auth").getAsString();
+			userId = data.getAsJsonObject().get("userId").getAsString();
 			
 			if(auth.equals("Y")) {
 				// login success data

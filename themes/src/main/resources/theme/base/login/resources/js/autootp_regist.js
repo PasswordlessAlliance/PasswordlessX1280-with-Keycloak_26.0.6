@@ -1,10 +1,16 @@
-var oneclick = $("#oneclick").val();
-var link = $("#link").val();
+var RegistrationCompleted = $("#RegistrationCompleted").val();
+var HomeURLIsNotRegistered = $("#HomeURLIsNotRegistered").val();
+var PleaseTryAgainLater = $("#PleaseTryAgainLater").val();
+var AutoOTPQRExpired = $("#AutoOTPQRExpired").val();
+var AreYouSureYouWantToUnregisterAutoOTP = $("#AreYouSureYouWantToUnregisterAutoOTP").val();
 
-if(oneclick === undefined || oneclick == null)		oneclick = "";
+var link = $("#link").val();
 if(link === undefined || link == null)				link = "";
 
+var websocket_status = 0;  // 0:disconnected, 1:connected
+
 var gapMinute = 0;
+var check_millisec = 0;
 var expirationInMinutes = 0;
 
 var strGapMinute = $("#gapMinute").val();
@@ -27,7 +33,7 @@ if(authDomain === undefined || authDomain == null)			authDomain = "";
 if(baseUrl === undefined || baseUrl == null)				baseUrl = "";
 
 if(baseUrl == "")
-	baseUrl = "javascript:alert('Home URL is not registered.');";
+	baseUrl = "javascript:alert('" + HomeURLIsNotRegistered + "');";
 
 if(clientId === undefined || clientId == null)				clientId = "";
 if(clientClientId === undefined || clientClientId == null)	clientClientId = "";
@@ -52,20 +58,9 @@ function AutoOTPRegist() {
 	}
 }
 
-function showAlert(msg) {
-	alert(msg);
-	//location.href = baseUrl;
-}
-
 function AutoOtpManageRestAPI() {
-	var isReg = checkAutoOTPReg();
-	//console.log("isReg = " + isReg);
-	
+	var isReg = checkAutoOTPReg("");
 	if(isReg == "T") {
-		//if(oneclick == "T" && link != "") {
-		//	location.href = link;
-		//}
-		
 		$("#autootp_content").css("height", "200px");
 		$("#cancel_qr").css("display", "block");
 	}
@@ -76,14 +71,11 @@ function AutoOtpManageRestAPI() {
 }
 
 // Check user regstered
-function checkAutoOTPReg() {
-	//console.log("----- checkAutoOTPReg() -----");
-	
+function checkAutoOTPReg(QRReg) {
 	var ret_val = "";
-	
 	var data = {
 		url: "isApUrl",
-		params: "userId=" + username + "&clientId=" + clientId + "&clientClientId=" + clientClientId
+		params: "userId=" + username + "&QRReg=" + QRReg
 	}
 	
 	var result = callApi(data);
@@ -106,39 +98,35 @@ function moveHome() {
 
 // Request unregister
 function loginAutoOTPwithdrawal() {
-	//console.log("----- loginAutoOTPwithdrawal() -----");
-	
-	var data = {
-		url: "withdrawalApUrl",
-		params: "userId=" + username + "&clientId=" + clientId + "&clientClientId=" + clientClientId
-	}
-	
-	var result = callApi(data);
-	//console.log(result);
-	jsonResult = JSON.parse(result);
-	
-	var code = jsonResult.code;
-	if(code == "000" || code == "000.0") {
-		alert("Registration has been canceled.");
-		moveHome();
-	}
-	else {
-		alert("Please try again later.");
-		moveHome();
+	if(confirm(AreYouSureYouWantToUnregisterAutoOTP)) {
+		var data = {
+			url: "withdrawalApUrl",
+			params: "userId=" + username + "&clientId=" + clientId + "&clientClientId=" + clientClientId
+		}
+		
+		var result = callApi(data);
+		jsonResult = JSON.parse(result);
+		
+		var code = jsonResult.code;
+		if(code == "000" || code == "000.0") {
+			alert(RegistrationHasBeenCanceled);
+			moveHome();
+		}
+		else {
+			alert(PleaseTryAgainLater);
+			moveHome();
+		}
 	}
 }
 
 // Request register
 function loginAutoOTPJoinStart() {
-	//console.log("----- loginAutoOTPJoinStart() -----");
-	
 	var data = {
 		url: "joinApUrl",
 		params: "userId=" + username + "&name=&email=" + "&clientId=" + clientId + "&clientClientId=" + clientClientId
 	}
 	
 	var result = callApi(data);
-	//console.log(result);
 	jsonResult = JSON.parse(result);
 	
 	var code = jsonResult.code;
@@ -154,74 +142,30 @@ function loginAutoOTPJoinStart() {
 		pushConnectorUrl = data.pushConnectorUrl;
 		pushConnectorToken = data.pushConnectorToken;
 		
-		/*
-		console.log("qr [" + qr + "]");
-		console.log("corpId [" + corpId + "]");
-		console.log("registerKey [" + registerKey + "]");
-		console.log("terms [" + terms + "]");
-		console.log("serverUrl [" + serverUrl + "]");
-		console.log("userId [" + userId + "]");
-		console.log("url [" + pushConnectorUrl + "]");
-		*/
-		
 		$("#qr").prop("src", qr);
-		//$("#qr").css("display", "block");
-		
 		$("#server_url").html(serverUrl);
 		$("#corp_id").html(corpId);
 		$("#user_id").html(userId);
 		
 		var today = new Date();
 		autootp_millisec = today.getTime();
+		check_millisec = today.getTime();
 		autootp_terms = parseInt(terms - 1);
 		
 		qrSocket = null;
-		drawAutoOTP();
-		//regAutoOTPRepeat();
 		connWebSocket();
+		drawAutoOTP();
 	}
 	else {
-		alert("Please try again later.");
+		alert(PleaseTryAgainLater);
 		moveHome();
-	}
-}
-
-// Check existing user
-function regAutoOTPRepeat() {
-	
-	//console.log("----- regAutoOTPRepeat() -----");
-	
-	var today = new Date();
-	var now_millisec = today.getTime();
-	var gap_millisec = now_millisec - autootp_millisec;
-	
-	if(gap_millisec < autootp_terms * 1000) {
-		
-		var isReg = checkAutoOTPReg();
-		//console.log("isReg = " + isReg);
-		
-		if(isReg == "T") {
-			clearTimeout(timeoutId1);
-			clearTimeout(timeoutId2);
-			
-			alert("Registration is complete.");
-			
-			if(oneclick == "T" && baseUrl != "") {
-				location.href = baseUrl;
-			}
-			else {
-				moveHome();
-			}
-		}
-		else {
-			timeoutId1 = setTimeout(regAutoOTPRepeat, 1500);
-		}
 	}
 }
 
 function drawAutoOTP() {
 	var today = new Date();
-	var gap_second = Math.ceil((today.getTime() - autootp_millisec) / 1000);
+	var now_millisec = today.getTime();
+	var gap_second = Math.ceil((now_millisec - autootp_millisec) / 1000);
 	
 	if(gap_second < autootp_terms) {
 	
@@ -233,12 +177,10 @@ function drawAutoOTP() {
 			
 		$("#rest_time").html(tmp_min + " : " + tmp_sec);
 		
-		if(qrSocket != null) {
-			//console.log("[" + today.getTime() + "] qrSocket state=" + qrSocket.readyState);
-			if(qrSocket.readyState != qrSocket.OPEN) {
-				//console.log("WebSocket closed --> change [POLLING]");
-				qrSocket = null;
-				regAutoOTPRepeat();
+		if(websocket_status == 0) {
+			if(now_millisec - check_millisec > 1500) {
+				check_millisec = now_millisec;
+				regAutoOTPResult();
 			}
 		}
 		
@@ -250,18 +192,30 @@ function drawAutoOTP() {
 		
 		$("#rest_time").html("0 : 00");
 		
-		setTimeout(() => alert("AutoOTP QR registration time has expired."), 100);
+		setTimeout(() => alert(AutoOTPQRExpired), 100);
 		setTimeout(() => moveHome(), 200);
 	}
 }
 
-function callApi(data) {
+// Check existing user
+function regAutoOTPResult() {
+	var today = new Date();
+	var now_millisec = today.getTime();
+	var gap_millisec = now_millisec - autootp_millisec;
+	var isReg = checkAutoOTPReg("T");
+	
+	if(isReg == "T") {
+		clearTimeout(timeoutId1);
+		clearTimeout(timeoutId2);
+		
+		alert(RegistrationCompleted);
+		moveHome();
+	}
+}
 
+function callApi(data) {
 	var api_url = "/auth/realms/" + $("#realmName").val() + "/protocol/openid-connect/autootp";
 	var ret_val = "";
-	
-	//console.log("---------- data -----------");
-	//console.log(data);
 	
 	$.ajax({
 		url: api_url,
@@ -270,17 +224,12 @@ function callApi(data) {
 		data: data,
 		async: false,
 		success: function(data) {
-			//console.log("[SUCCESS]");
-			//console.log(data);
-			
 			ret_val = data.result;
 		},
 		error: function(xhr, status, error) {
-			//console.log("[ERROR] code: " + xhr.status + ", message: " + xhr.responseText + ", status: " + status + ", ERROR: " + error);
-			$("#search_result").html("No results were found.");
+			alert(NoResultsWereFound);
 		},
 		complete: function(data) {
-			//console.log("[COMPLETE]");
 		}
 	});
 	
@@ -297,60 +246,72 @@ function callApi(data) {
 	  3 CLOSED
 */
 
-var qrSocket = null;
-var result = null;
+var socketConn = null;
+var socketResult = null;
+
+function websocketConnect() {
+	websocket_status = 1;
+}
+
+function websocketClose() {
+	websocket_status = 0;
+	
+	if(socketConn != null)
+		socketConn.close();
+}
 
 function connWebSocket() {
 
-	qrSocket = new WebSocket(pushConnectorUrl);
+	socketConn = new WebSocket(pushConnectorUrl);
 
-	qrSocket.onopen = function(e) {
-		//console.log("######## WebSocket Connected ########");
-		var send_msg = '{"pushConnectorToken":"' + pushConnectorToken + '"}';
-		//console.log("url [" + pushConnectorUrl + "]");
-		//console.log("send [" + send_msg + "]");
-		try {
-			qrSocket.send(send_msg);
-		} catch(err) {
-			//console.log(err);
-		}
+	socketConn.onopen = function(e) {
+		console.log("######## WebSocket Connected ########");
+		var send_msg = '{"type":"hand","pushConnectorToken":"' + pushConnectorToken + '"}';
+		console.log("url [" + pushConnectorUrl + "]");
+		console.log("send [" + send_msg + "]");
+		socketConn.send(send_msg);
+
+		websocketConnect();
 	}
 
-	qrSocket.onmessage = async function (event) {
-		//console.log("######## WebSocket Data received [" + qrSocket.readyState + "] ########");
-		//console.log(event);
-		//console.log("=================================================");
+	socketConn.onmessage = async function (event) {
+		console.log("######## WebSocket Data received [" + socketConn.readyState + "] ########");
 		
 		try {
 			if (event !== null && event !== undefined) {
-				result = await JSON.parse(event.data);
-				//console.log(result);
-				//console.log("=================================================");
+				socketResult = await JSON.parse(event.data);
+				console.log("result [" + event.data + "]");
+				if(socketResult.type == "result") {
+					regAutoOTPResult();
+				}
 			}
 		} catch (err) {
-			//console.log(err);
+			console.log(err);
 		}
 	}
 
-	qrSocket.conclose = function(event) {
-		/*
+	socketConn.conclose = function(event) {
 		if(event.wasClean)
-			console.log("######## WebSocket Disconnected - OK !!! [" + qrSocket.readyState + "] ########");
+			console.log("######## WebSocket Disconnected - OK !!! [" + socketConn.readyState + "] ########");
 		else
-			console.log("######## WebSocket Disconnected - Error !!! [" + qrSocket.readyState + "] ########");
+			console.log("######## WebSocket Disconnected - Error !!! [" + socketConn.readyState + "] ########");
 
 		console.log("=================================================");
 		console.log(event);
 		console.log("=================================================");
-		*/
+
+		websocketClose();
 	}
 
-	qrSocket.onerror = function(error) {
-		/*
-		console.log("######## WebSocket Error !!! [" + qrSocket.readyState + "] ########");
+	socketConn.onerror = function(error) {
+		console.log("######## WebSocket Error !!! [" + socketConn.readyState + "] ########");
 		console.log("=================================================");
 		console.log(error);
 		console.log("=================================================");
-		*/
+
+		$("#login_mobile_check").show();
+		$("#reg_mobile_check").show();
+
+		websocketClose();
 	}
 }
