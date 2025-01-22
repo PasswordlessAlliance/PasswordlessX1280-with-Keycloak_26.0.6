@@ -3,6 +3,7 @@ var HomeURLIsNotRegistered = $("#HomeURLIsNotRegistered").val();
 var PleaseTryAgainLater = $("#PleaseTryAgainLater").val();
 var AutoOTPQRExpired = $("#AutoOTPQRExpired").val();
 var AreYouSureYouWantToUnregisterAutoOTP = $("#AreYouSureYouWantToUnregisterAutoOTP").val();
+var RegistrationHasBeenCanceled = $("#RegistrationHasBeenCanceled").val();
 
 var link = $("#link").val();
 if(link === undefined || link == null)				link = "";

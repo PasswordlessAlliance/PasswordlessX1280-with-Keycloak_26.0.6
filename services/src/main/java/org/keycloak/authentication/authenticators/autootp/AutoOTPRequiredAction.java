@@ -133,7 +133,7 @@ public class AutoOTPRequiredAction implements RequiredActionProvider, Credential
 		        	System.out.println(gapSeconds + " seconds have passed since AutoOTP authentication. --> Login Failed !!!");
 		        }
 		        else {
-		        	System.out.println("userId[" + userId + "] and username[" + username + "] is equal and " + gapSeconds + " seconds have passed (Timeout limit: " + maxGapSeconds + " seconds) --> Login Success !!!");
+		        	System.out.println("userId[" + userId + "] and username[" + username + "] is equal and " + gapSeconds + " seconds have passed (Timeout limit: " + maxGapSeconds + " seconds) / Change Password [" + dbPasswdUpdate + "] --> Login Success !!!");
 		            context.success();
 		            
 		            if(login_step.equals("1step") && dbPasswdUpdate.equals("true")) {
