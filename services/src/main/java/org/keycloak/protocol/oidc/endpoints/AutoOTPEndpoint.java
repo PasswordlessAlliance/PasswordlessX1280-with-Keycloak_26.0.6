@@ -250,7 +250,19 @@ public class AutoOTPEndpoint {
         String dbStep = realm.getAttribute("autootpAppSettingStep");
         String dbDomainValidToken = realm.getAttribute("autootpReturnDomainValidationToken");
         String dbSecretKey = realm.getAttribute("autootpServerSettingAppServerKey");
+        String dbPasswdUpdate = realm.getAttribute("autootpPasswdUpdate");
         String dbAuthDomain = realm.getAttribute("autootpServerSettingAuthServerDomain");
+        
+        if(dbDomain == null)			dbDomain = "";
+        if(dbEmail == null)				dbEmail = "";
+        if(dbIpAddr == null)			dbIpAddr = "";
+        if(dbName == null)				dbName = "";
+        if(dbProxyDomain == null)		dbProxyDomain = "";
+        if(dbStep == null)				dbStep = "";
+        if(dbDomainValidToken == null)	dbDomainValidToken = "";
+        if(dbSecretKey == null)			dbSecretKey = "";
+        if(dbPasswdUpdate == null)		dbPasswdUpdate = "";
+        if(dbAuthDomain == null)		dbAuthDomain = "";
         
     	if(url.equals("sendEmail")) {
  			UserModel user = session.users().getUserByUsername(realm, targetUser);
@@ -290,7 +302,7 @@ public class AutoOTPEndpoint {
 	    	
 	    	checkParameterDuplicated();
 	    	
-	    	callResult = callAutoOTPReq(secretKey, auth_url, url, params);
+	    	callResult = callAutoOTPReq(secretKey, dbPasswdUpdate, dbStep, auth_url, url, params);
     	}
 
         /*
@@ -380,7 +392,7 @@ public class AutoOTPEndpoint {
     
     // ----------------------------------------------------------------------------------------- Inner Function
     
-    public Map<String, Object> callAutoOTPReq(String db_secretKey, String auth_url, String url, String params) {
+    public Map<String, Object> callAutoOTPReq(String db_secretKey, String dbPasswdUpdate, String step, String auth_url, String url, String params) {
     	
     	// If changed, Only shown once
     	//String secretKey = "6df2d83a754a12ba";
@@ -450,7 +462,7 @@ public class AutoOTPEndpoint {
 			
 			//System.out.println("result [" + result + "]");
 			
-			if(apiUrl == isApUrl && QRReg.equals("T")) {
+			if(apiUrl == isApUrl && QRReg.equals("T") && step.equals("1step") && dbPasswdUpdate.equals("true")) {
 				String exist = "";
 				JsonElement element = JsonParser.parseString(result);
 				JsonObject data = element.getAsJsonObject().get("data").getAsJsonObject();

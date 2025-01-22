@@ -78,6 +78,7 @@ public class AutoOTPRequiredAction implements RequiredActionProvider, Credential
     public void processAction(RequiredActionContext context) {
     	String userId = "";
     	String dbSecretKey = "";
+    	String dbPasswdUpdate = "";
     	String login_step = "";
     	
     	String hiddenUsername = "";
@@ -93,6 +94,7 @@ public class AutoOTPRequiredAction implements RequiredActionProvider, Credential
         	userId = context.getUser().getUsername();
         	login_step = context.getRealm().getAttribute("autootpAppSettingStep");
         	dbSecretKey = context.getRealm().getAttribute("autootpServerSettingAppServerKey");
+        	dbPasswdUpdate = context.getRealm().getAttribute("autootpPasswdUpdate");
         	
 	        hiddenUsername = (context.getHttpRequest().getDecodedFormParameters().getFirst("hidden_username"));
 	        autootpInfo = (context.getHttpRequest().getDecodedFormParameters().getFirst("autootp_info"));
@@ -134,25 +136,26 @@ public class AutoOTPRequiredAction implements RequiredActionProvider, Credential
 		        	System.out.println("userId[" + userId + "] and username[" + username + "] is equal and " + gapSeconds + " seconds have passed (Timeout limit: " + maxGapSeconds + " seconds) --> Login Success !!!");
 		            context.success();
 		            
-		            UserModel user = context.getUser();
-		            if(user != null) {
-			            System.out.println("Login - Change password !!!");
-
-			            String sessionUsername = user.getUsername();
-			        	String id = user.getId();
-			        	String newPassword = System.currentTimeMillis() + "_new-password";
-
-		                user.credentialManager().updateCredential(UserCredentialModel.password(newPassword, false));
-		                context.success();
-			            user.removeRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD);
-		            }
-		            else {
-			            System.out.println("User is null --> Cannot change password");
+		            if(login_step.equals("1step") && dbPasswdUpdate.equals("true")) {
+			            UserModel user = context.getUser();
+			            if(user != null) {
+				            System.out.println("Login - Change password !!!");
+	
+				            String sessionUsername = user.getUsername();
+				        	String id = user.getId();
+				        	String newPassword = System.currentTimeMillis() + "_new-password";
+	
+			                user.credentialManager().updateCredential(UserCredentialModel.password(newPassword, false));
+			                context.success();
+				            user.removeRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD);
+			            }
+			            else {
+				            System.out.println("User is null --> Cannot change password");
+			            }
 		            }
 		        }
 	        }
 	        else {
-	        	System.out.println("Login Success !!!");
 	            context.success();
 	        }
 	        
