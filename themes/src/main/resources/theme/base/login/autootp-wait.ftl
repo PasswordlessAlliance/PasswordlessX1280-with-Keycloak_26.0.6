@@ -36,6 +36,7 @@
                 <input type="hidden" id="RegisterAutoOTPAccountFirst" name="RegisterAutoOTPAccountFirst" value='${msg("RegisterAutoOTPAccountFirst")}'>
                 <input type="hidden" id="CancelAutoOTPSignIn" name="CancelAutoOTPSignIn" value='${msg("CancelAutoOTPSignIn")}'>
                 <input type="hidden" id="YourAutoOTPAccountNotRegistered" name="YourAutoOTPAccountNotRegistered" value='${msg("YourAutoOTPAccountNotRegistered")}'>
+                <input type="hidden" id="AuthenticationDenied" name="AuthenticationDenied" value='${msg("AuthenticationDenied")}'>
 				
 				<form id="frm" name="frm">
 					<input type="hidden" id="hidden_username" name="hidden_username" value="${(username!'')}">
