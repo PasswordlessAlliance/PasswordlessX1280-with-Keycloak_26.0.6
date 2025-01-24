@@ -7,7 +7,7 @@
     <#elseif section = "form">
 		<div id="kc-form">
 			<div id="kc-form-wrapper" style="display:none;">
-			
+				
 				<input type="hidden" id="base_url" name="base_url" value="${client.baseUrl!''}">
 				<input type="hidden" id="page_set" name="page_set" value="autootp">
 				<input type="hidden" id="page_config" name="page_config" value="">
@@ -20,6 +20,7 @@
 				<input type="hidden" id="login_flow" name="login_flow" value="">
                 <input type="hidden" id="submit_url" name="submit_url" value="${url.loginAction}">
                 
+                <!-- message -->
                 <input type="hidden" id="backToLogin" name="backToLogin" value='${msg("backToLogin")}'>
                 <input type="hidden" id="backToApplication" name="backToApplication" value='${msg("backToApplication")}'>
                 
@@ -139,7 +140,7 @@
 	    	-->
 	    	<a href="#" onclick="cancelWithdrawAutoOTP();" style="display:inline-block;">${msg("BackToLogin")}</a>
 		</div>
-	    <script type="text/javascript" src="${url.resourcesPath}/js/jquery.min.js"></script>
+	    <script type="text/javascript" src="${url.resourcesPath}/js/jquery-3.7.1.min.js"></script>
     	<script type="text/javascript" src="${url.resourcesPath}/js/autootp_login.js"></script>
 	    <script type="text/javascript">
 		    $(document).ready(function() {

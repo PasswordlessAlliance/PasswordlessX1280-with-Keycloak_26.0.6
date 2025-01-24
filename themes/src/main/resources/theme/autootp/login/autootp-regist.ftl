@@ -50,6 +50,7 @@
 		<input type="hidden" id="clientId" name="clientId" value="${clientId}">
 		<input type="hidden" id="clientClientId" name="clientClientId" value="${clientClientId}">
 		
+		<!-- message -->
 		<input type="hidden" id="RegistrationCompleted" name="RegistrationCompleted" value='${msg("RegistrationCompleted")}'>
 		<input type="hidden" id="HomeURLIsNotRegistered" name="HomeURLIsNotRegistered" value='${msg("HomeURLIsNotRegistered")}'>
 		<input type="hidden" id="RegistrationHasBeenCanceled" name="RegistrationHasBeenCanceled" value='${msg("RegistrationHasBeenCanceled")}'>
@@ -134,7 +135,7 @@
 	
 		</div>
 		</div>
-		<script type="text/javascript" src="${resourcesPath}/js/jquery.min.js"></script>
+		<script type="text/javascript" src="${resourcesPath}/js/jquery-3.7.1.min.js"></script>
 	    <script type="text/javascript" src="${resourcesPath}/js/autootp_regist.js"></script>
 	    <script type="text/javascript">
 		    $(document).ready(function() {

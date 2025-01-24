@@ -1,3 +1,5 @@
+// autootp_login.js
+
 var AutoOTPSignIn = $("#AutoOTPSignIn").val();
 var HomeURLnotRegistered = $("#HomeURLnotRegistered").val();
 var AutoOTPEmailSent = $("#AutoOTPEmailSent").val();

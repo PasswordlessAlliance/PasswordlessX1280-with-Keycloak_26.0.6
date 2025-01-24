@@ -1,3 +1,5 @@
+// autootp_regist.js
+
 var RegistrationCompleted = $("#RegistrationCompleted").val();
 var HomeURLIsNotRegistered = $("#HomeURLIsNotRegistered").val();
 var PleaseTryAgainLater = $("#PleaseTryAgainLater").val();
