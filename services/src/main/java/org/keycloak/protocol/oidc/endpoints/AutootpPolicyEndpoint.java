@@ -234,13 +234,21 @@ public class AutootpPolicyEndpoint {
         cors = Cors.builder().auth().allowedMethods("POST").auth().exposedHeaders(Cors.ACCESS_CONTROL_ALLOW_METHODS);
 
         MultivaluedMap<String, String> formParameters = session.getContext().getUri().getQueryParameters();
-//    	System.out.println("############################### AutootpPolicyEndpoint :: processGrantRequestInternal - formParameters [" + formParameters.toString() + "] ");
 
         if (formParameters == null) {
             formParameters = new MultivaluedHashMap<>();
         }
 
         formParams = formParameters;
+        
+        try (InputStream is = AutootpPolicyEndpoint.class.getResourceAsStream("/org/keycloak/autootp.properties")) {
+            Properties props = new Properties();
+            props.load(is);
+            grantType = props.getProperty("grantType");
+
+        } catch (IOException e) {
+        	e.printStackTrace();
+        }
 
         // https://tools.ietf.org/html/rfc6749#section-5.1
         // The authorization server MUST include the HTTP "Cache-Control" response header field
@@ -252,25 +260,6 @@ public class AutootpPolicyEndpoint {
         checkRealm();
         checkGrantType();
 
-        if (!grantType.equals(OAuth2Constants.UMA_GRANT_TYPE)
-                // pre-authorized grants are not necessarily used by known clients.
-                && !grantType.equals(PreAuthorizedCodeGrantTypeFactory.GRANT_TYPE)) {
-            checkClient();
-            checkParameterDuplicated();
-        }
-
-        /*
-         * To request an access token that is bound to a public key using DPoP, the client MUST provide a valid DPoP
-         * proof JWT in a DPoP header when making an access token request to the authorization server's token endpoint.
-         * This is applicable for all access token requests regardless of grant type (e.g., the common
-         * authorization_code and refresh_token grant types and extension grants such as the JWT
-         * authorization grant [RFC7523])
-         */
-        DPoPUtil.retrieveDPoPHeaderIfPresent(session, clientConfig, event, cors).ifPresent(dPoP -> {
-            session.setAttribute(DPoPUtil.DPOP_SESSION_ATTRIBUTE, dPoP);
-        });
-
-        
         
         // Realm 사용여부체크
         boolean isRealmEnabled = realm.isEnabled();
@@ -289,8 +278,6 @@ public class AutootpPolicyEndpoint {
     	
     	
     	String developerUrl = "";
-//    	String developerUrl = "https://testdevelopers.autootp.com";
-//    	String developerUrl = "https://developers.autootp.com";
     	
         List<String> values = null;
     	int i = 0;
@@ -302,7 +289,6 @@ public class AutootpPolicyEndpoint {
             Properties props = new Properties();
             props.load(is);
             developerUrl = props.getProperty("developerUrl");
-//            System.out.println("############################### kcAutootpAppSave :: devcenterUrl [" + developerUrl + "] ");
 
         } catch (IOException e) {
         	e.printStackTrace();
@@ -324,7 +310,6 @@ public class AutootpPolicyEndpoint {
 		                KeyValueStr = KeyValueStr + "sign=" +  URLEncode(signText); 											// 전자인증 sign값을 URLEncode 처리 
 	        		}catch (Exception e) {
 	        			System.out.println("kcAutootpAppSave :: RSA Sign error [" + e.toString() + "] ");
-//	        			System.out.println("############################### kcAutootpAppSave :: RSA Sign 오류 [" + e.toString() + "] ");
 	        		}
 	        	}else {
 		            KeyValueStr = KeyValueStr + key + "=" +  URLEncode(values.toString().replaceAll("\\[","").replaceAll("\\]",""));
@@ -339,7 +324,6 @@ public class AutootpPolicyEndpoint {
         	  methodType = "POST";
         	  try {
             	  
-//        		  System.out.println("############################### kcAutootpAppSave ::realm.getAttribute autootpAppSettingPublickey [" + realm.getAttribute("autootpAppSettingPublickey") + "] ");
                   if(realm.getAttribute("autootpAppSettingPublickey") == null || realm.getAttribute("autootpAppSettingPublickey").equals("")) {
                       createRsaGenKey(); // RSA PublicKey/PrivateKey create
                 	  realm.setAttribute("autootpAppSettingPublickey", mpublicKey);
@@ -349,7 +333,6 @@ public class AutootpPolicyEndpoint {
         		  
         	  }catch (Exception e) {
         		  System.out.println("kcAutootpAppSave ::RSA PublicKey/PrivateKey create Error [" + e.toString() + "] ");
-//        		  System.out.println("############################### kcAutootpAppSave ::RSA PublicKey/PrivateKey create Error [" + e.toString() + "] ");
         	  }
         	  break;
           case "[kcAutootpDeleteKey]": 
@@ -373,21 +356,13 @@ public class AutootpPolicyEndpoint {
         	  methodType = "GET";
         	  break;
           }
-//          System.out.println("############################### AutootpPolicyEndpoint :: processGrantRequestInternal - urlKey [" + urlKey + "] ");
-//          System.out.println("############################### AutootpPolicyEndpoint :: processGrantRequestInternal - url [" + url + "] ");
-//          System.out.println("############################### AutootpPolicyEndpoint :: processGrantRequestInternal - appID [" + appID + "] ");
-//          System.out.println("############################### AutootpPolicyEndpoint :: processGrantRequestInternal - KeyValueStr [" + KeyValueStr + "] ");
         }
     	
     	Map<String, String> callResult = callServerApi(methodType, url, KeyValueStr);
     	
-//        cors.build(httpResponse);
-//        return cors.builder(Response.ok(callResult, MediaType.APPLICATION_JSON_TYPE)).build();
-        
-        OAuth2GrantType.Context context = new OAuth2GrantType.Context(session, clientConfig, callResult,
-                formParams, event, cors, null);
-        return grant.process(context);
-
+    	Response.ResponseBuilder responseBuilder;
+    	responseBuilder = Response.ok(callResult).header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+    	return cors.add(responseBuilder);
     }
 
     @OPTIONS
@@ -497,18 +472,14 @@ public class AutootpPolicyEndpoint {
  		try {
  			if(methodType.equals("POST")) {	
  				result = sendPost(url, params);	
-// 	 			System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ sendPost result [" + result + "]");
  			} 
  			else {	
  				result = sendGet(url, params);	
-// 	 			System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ sendGet result [" + result + "]");
  			}
  		} catch(Exception e) {
  			System.out.println("callServerApi Error: " + e);
-// 			System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ callServerApi Error: " + e);
  		}
 
-//		System.out.println("result [" + result + "]");
 
 		Map<String, String> mapResult = new HashMap<String, String>();
 		
@@ -542,10 +513,6 @@ public class AutootpPolicyEndpoint {
 
  		String retVal = "";
  		Map<String, String> mapParams = getParamsKeyValue(params);
-// 		System.out.println("params [" + params + "]");
-// 		System.out.println("type [" + type + "]");
-// 		System.out.println("requestURL [" + requestURL + "]");
-// 		System.out.println("map [" + mapParams.toString() + "]");
 
  		try {
  			URIBuilder b = new URIBuilder(requestURL);
@@ -558,7 +525,6 @@ public class AutootpPolicyEndpoint {
  				//String value = mapParams.get(key);
  				b.addParameter(key, value);
  				
-// 				System.out.println("key [" + key + "] value [" + value + "]");
  			}
  			URI uri = b.build();
  	
@@ -571,7 +537,6 @@ public class AutootpPolicyEndpoint {
  		        httpPost.addHeader("Content-Type", "application/x-www-form-urlencoded");;
  	        	response = httpClient.execute(httpPost);
  	        	
-// 	        	System.out.println("response [" + response.toString() + "]");
  	        }
  	        else {
  	        	HttpGet httpGet = new HttpGet(uri);
@@ -626,7 +591,6 @@ public class AutootpPolicyEndpoint {
      */
     private static void createRsaGenKey() throws Exception{
 
-//        String pubkey = "KeycloalAutoOTP";
 
         String genPubkey = "";
         
@@ -635,7 +599,6 @@ public class AutootpPolicyEndpoint {
             Properties props = new Properties();
             props.load(is);
             genPubkey = props.getProperty("genPubkey");
-//            System.out.println("############################### kcAutootpAppSave :: genPubkey [" + genPubkey + "] ");
 
         } catch (IOException e) {
         	e.printStackTrace();
@@ -644,7 +607,7 @@ public class AutootpPolicyEndpoint {
         
         
         SecureRandom random = new SecureRandom(genPubkey.getBytes());
-        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA","SunJSSE"); // OK
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA"); // OK
         generator.initialize(2048, random); // 여기에서는 2048 bit 키를 생성하였음
 
         KeyPair pair = generator.generateKeyPair();
@@ -653,180 +616,10 @@ public class AutootpPolicyEndpoint {
         
         mpublicKey = Base64.getEncoder().encodeToString(pubKey.getEncoded());
         mprivateKey = Base64.getEncoder().encodeToString(privKey.getEncoded());
-//        System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% createRsaGenKey :: mpublicKey [" + mpublicKey + "] ");    
-//        System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% createRsaGenKey :: mprivateKey [" + mprivateKey + "] ");    
         
     }
 
     
-    /**
-     * 개인키로 암호화
-     * @param encStr
-     * @return byteArrayToHex(cipherText)
-     * @throws Exception
-     */
-/*    
-    private static String rsaPrivateEnc(String encStr) throws Exception{
-
-        Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1PADDING", "SunJCE"); // 알고리즘 명 / Cipher 알고리즘 mode / padding
-
-        System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% rsaPrivateEnc :: mprivateKey 저장되어있는 개인키값 [" + mprivateKey + "] ");    
-        System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% rsaPrivateEnc :: 암호화 전 delkey [" + encStr + "] ");    
-        PKCS8EncodedKeySpec rkeySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(mprivateKey));
-
-        KeyFactory ukeyFactory = KeyFactory.getInstance("RSA");
-
-        PrivateKey privatekey = null;
-
-        try {
-            // privatekey에 공용키 값 설정
-        	privatekey = ukeyFactory.generatePrivate(rkeySpec);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        byte[] input = encStr.getBytes();
-        cipher.init(Cipher.ENCRYPT_MODE, privatekey);
-
-        byte[] cipherText = cipher.doFinal(input);
-
-        System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% rsaPrivateEnc :: 암호화 후 delkey [" + byteArrayToHex(cipherText)+ "] ");    
-        return byteArrayToHex(cipherText);
-
-    }
-*/
-    
-    /**
-     * 공용키로 복호화
-     * @param byteArrayToHex(cipherText) ==> decStr
-     * @return
-     * @throws Exception
-     */
-/*    
-    private static String rsaPublicDec(String decStr) throws Exception{
-
-        Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1PADDING", "SunJCE");
-
-        System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% rsaPublicDec :: mpublicKey [" + mpublicKey + "] ");    
-        X509EncodedKeySpec ukeySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(mpublicKey));
-        KeyFactory rkeyFactory = KeyFactory.getInstance("RSA");
-
-        PublicKey publicKey = null;
-
-        try {
-        	publicKey = rkeyFactory.generatePublic(ukeySpec);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // 복호
-        cipher.init(Cipher.DECRYPT_MODE, publicKey);
-        byte[] plainText = cipher.doFinal(hexToByteArray(decStr));
-
-        String returnStr = new String(plainText);
-
-        System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% rsaPublicDec :: 복호화 후 delkey [" + returnStr+ "] ");    
-        return returnStr;
-    }
-*/    
-    
-    /**
-     * 암호화
-     * @param encStr
-     * @return byteArrayToHex(cipherText)
-     * @throws Exception
-     */
-/*    
-    private static String rsaEnc(String encStr) throws Exception{
-
-        Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1PADDING", "SunJCE"); // 알고리즘 명 / Cipher 알고리즘 mode / padding
-
-        X509EncodedKeySpec ukeySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(mpublicKey));
-
-        KeyFactory ukeyFactory = KeyFactory.getInstance("RSA");
-
-        PublicKey publickey = null;
-
-        try {
-            // PublicKey에 공용키 값 설정
-            publickey = ukeyFactory.generatePublic(ukeySpec);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        byte[] input = encStr.getBytes();
-        cipher.init(Cipher.ENCRYPT_MODE, publickey);
-
-        byte[] cipherText = cipher.doFinal(input);
-
-        return byteArrayToHex(cipherText);
-
-    }
-*/
-    /**
-     * 복호화
-     * @param byteArrayToHex(cipherText) ==> decStr
-     * @return
-     * @throws Exception
-     */
-/*    
-    private static String rsaDec(String decStr) throws Exception{
-
-        Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1PADDING", "SunJCE");
-
-        PKCS8EncodedKeySpec rkeySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(mprivateKey));
-        KeyFactory rkeyFactory = KeyFactory.getInstance("RSA");
-
-        PrivateKey privateKey = null;
-
-        try {
-            privateKey = rkeyFactory.generatePrivate(rkeySpec);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        // 복호
-        cipher.init(Cipher.DECRYPT_MODE, privateKey);
-        byte[] plainText = cipher.doFinal(hexToByteArray(decStr));
-
-        String returnStr = new String(plainText);
-
-        return returnStr;
-    }
-*/
-
-
-
-    // hex string to byte[]
-/*    
-    public static byte[] hexToByteArray(String hex) {
-        if (hex == null || hex.length() == 0) {
-            return null;
-        }
-        byte[] ba = new byte[hex.length() / 2];
-        for (int i = 0; i < ba.length; i++) {
-            ba[i] = (byte) Integer.parseInt(hex.substring(2 * i, 2 * i + 2), 16);
-        }
-        return ba;
-    }
-*/
-    // byte[] to hex sting
-/*    
-    public static String byteArrayToHex(byte[] ba) {
-        if (ba == null || ba.length == 0) {
-            return null;
-        }
-        StringBuffer sb = new StringBuffer(ba.length * 2);
-        String hexNumber;
-        for (int x = 0; x < ba.length; x++) {
-            hexNumber = "0" + Integer.toHexString(0xff & ba[x]);
-
-            sb.append(hexNumber.substring(hexNumber.length() - 2));
-        }
-        return sb.toString();
-    }
-*/
     
     // URLEncoder
     public String URLEncode(String param) {
@@ -842,49 +635,6 @@ public class AutootpPolicyEndpoint {
     }
  	
 
-    /**
-     * 암호화
-     */
-/*    
-    static String encode(String plainData, String stringPublicKey) {
-        String encryptedData = null;
-        try {
-            //평문으로 전달받은 공개키를 공개키객체로 만드는 과정
-            PublicKey publicKey =  getPublicKey(stringPublicKey);
-            //만들어진 공개키객체를 기반으로 암호화모드로 설정하는 과정
-            Cipher cipher = Cipher.getInstance("RSA");
-            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-            //평문을 암호화하는 과정
-            byte[] byteEncryptedData = cipher.doFinal(plainData.getBytes());
-            encryptedData = Base64.getEncoder().encodeToString(byteEncryptedData);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return encryptedData;
-    }
-*/    
-    /**
-     * 복호화
-     */
-/*
-    static String decode(String encryptedData, String stringPrivateKey) {
-        String decryptedData = null;
-        try {
-            //평문으로 전달받은 개인키를 개인키객체로 만드는 과정
-            PrivateKey privateKey = getPrivateKey(stringPrivateKey);
-            //만들어진 개인키객체를 기반으로 암호화모드로 설정하는 과정
-            Cipher cipher = Cipher.getInstance("RSA");
-            cipher.init(Cipher.DECRYPT_MODE, privateKey);
-            //암호문을 평문화하는 과정
-            byte[] byteEncryptedData = Base64.getDecoder().decode(encryptedData.getBytes());
-            byte[] byteDecryptedData = cipher.doFinal(byteEncryptedData);
-            decryptedData = new String(byteDecryptedData);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return decryptedData;
-    }
-*/	
     static PublicKey getPublicKey(String stringPublicKey) {
         PublicKey publicKey = null;
         try {
@@ -913,14 +663,11 @@ public class AutootpPolicyEndpoint {
     }
     public static String sign(String plainText,String strPrivateKey) {
         try {
-//        	System.out.println("전자서명 전 plainText값====================="+plainText); 
-//        	System.out.println("전자서명 전 개인키값====================="+strPrivateKey); 
         	PrivateKey privateKey = getPrivateKey(strPrivateKey);
         	Signature privateSignature = Signature.getInstance("SHA256withRSA");
             privateSignature.initSign(privateKey);
             privateSignature.update(plainText.getBytes("UTF-8"));
             byte[] signature = privateSignature.sign();
-//        	System.out.println("전자서명 후 sign값====================="+Base64.getEncoder().encodeToString(signature)); 
             return Base64.getEncoder().encodeToString(signature);
         } catch (NoSuchAlgorithmException | InvalidKeyException | UnsupportedEncodingException | SignatureException e) {
             throw new RuntimeException(e);
@@ -943,9 +690,6 @@ public class AutootpPolicyEndpoint {
 	
 	
 	
-	// --------------------------------------------------
- 	
- 	
  	public String sendPost(String url, String urlParameters) throws Exception {
  		
  		String USER_AGENT = "Mozilla/5.0";
@@ -976,7 +720,6 @@ public class AutootpPolicyEndpoint {
 			response.append(inputLine);
 		}
 		in.close();
-//		System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ sendPost ("+url+") :: ["+responseCode+"]"+ response.toString());
 		return response.toString();
 
 	}
@@ -989,7 +732,6 @@ public class AutootpPolicyEndpoint {
  			urlStr = url + "?" + urlParameters;
  		}
  		
-//		System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ sendGet openConnection ("+urlStr+") ");
 		URL obj = new URL(urlStr);
 		ignoreSsl();
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -1011,7 +753,6 @@ public class AutootpPolicyEndpoint {
 			response.append(inputLine);
 		}
 		in.close();
-//		System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ sendGet ("+urlStr+") :: ["+responseCode+"]"+ response.toString());
 		return response.toString();
 	}
  	
