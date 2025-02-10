@@ -88,14 +88,21 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
 
     @Override
     public EmailTemplateProvider setUser(UserModel user, ClientModel client) {
-    	String strUser = null;
-    	if(user != null)
-    		strUser = user.toString();
-
-        String baseUrl = client.getBaseUrl();
+        String baseUrl = "";
+        String clientId = "";
+        String clientClientId = "";
+        
+    	if(client != null) {
+	        baseUrl = client.getBaseUrl();
+	        clientId = client.getId();
+	        clientClientId = client.getClientId();
+    	}
+    	
+    	System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> FreeMarkerEmailTemplateProvider :: setUser(UserModel user, ClientModel client) - client [" + client + "]");
+    	
         attributes.put("baseUrl", baseUrl);
-        attributes.put("clientId", client.getId());
-        attributes.put("clientClientId", client.getClientId());
+        attributes.put("clientId", clientId);
+        attributes.put("clientClientId", clientClientId);
 
         return setUser(user);
     }
@@ -121,11 +128,49 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
         AuthenticationFlowModel flowModel = realm.getBrowserFlow();
         String dbBrowserFlowAlias = flowModel.getAlias();
         
+String dbFlowBinding = "";
+        
+        
+        String dbBrowserFlowId = flowModel.getId();
+        String dbBrowserFlowDesc = flowModel.getDescription();
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> FreeMarkerEmailTemplateProvider :: setUser(UserModel user) - dbBrowserFlowId [" + dbBrowserFlowId + "] dbBrowserFlowDesc [" + dbBrowserFlowDesc + "] dbBrowserFlowAlias [" + dbBrowserFlowAlias + "]");
+        
+        String tmpClientId = (String) attributes.get("clientId");
+        String tmpClientClientId = (String) attributes.get("clientClientId");
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> FreeMarkerEmailTemplateProvider :: setUser(UserModel user) - authenticationSession [" + authenticationSession + "] clientId [" + tmpClientClientId + "] clientClientId [" + tmpClientClientId + "]");
+
+        ClientModel client = realm.getClientByClientId(tmpClientClientId);
+
+        if(client != null) {
+	        Map<String, String> flowBindings = client.getAuthenticationFlowBindingOverrides();
+	        if(flowBindings == null) {
+	        	System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> FreeMarkerEmailTemplateProvider :: setUser(UserModel user) - flowBindings is null !!!!");
+	        }
+	        else {
+	        	System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> FreeMarkerEmailTemplateProvider :: setUser(UserModel user) - flowBindings : " + flowBindings.size());
+	        	
+	        	Set<String> set = flowBindings.keySet();
+	        	Iterator<String> it = set.iterator();
+	        	while(it.hasNext()) {
+	        		String key = it.next();
+	        		dbFlowBinding = key;
+	        		System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> FreeMarkerEmailTemplateProvider :: setUser(UserModel user) - key [" + key + "] value [" + flowBindings.get(key) + "]");
+	        	}
+	        }
+        }
+        
         if(dbBrowserFlowAlias == null)
             dbBrowserFlowAlias = "";
         
         if(dbBrowserFlowAlias.toUpperCase().indexOf("AUTOOTP") > -1 || dbBrowserFlowAlias.toUpperCase().indexOf("PASSWORDLESS") > -1)
             dbBrowserFlowAlias = "AUTOOTP";
+        
+        if(dbBrowserFlowAlias.equals("AUTOOTP") && dbFlowBinding.equals("browser")) {
+        	dbBrowserFlowAlias = "browser";
+        	System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> FreeMarkerEmailTemplateProvider :: setUser(UserModel user) - AutoOTP login --> ID/PASS login");
+        }
+        
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> FreeMarkerEmailTemplateProvider :: setUser(UserModel user) - dbBrowserFlowAlias [" + dbBrowserFlowAlias + "]");
         
         String dateTime = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         
@@ -312,13 +357,16 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
         String dateTime = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         String autootpRegParam = dateTime + "|||" + expirationInMinutes + "|||" + username + "|||" + URLEncode(dbAuthDomain) + "|||" + URLEncode(baseUrl) + "|||" + clientId + "|||" + URLEncode(clientClientId);
         String encParam = getEncryptAES(autootpRegParam, dbSecretKey.getBytes());
+        
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> FreeMarkerEmailTemplateProvider :: sendAutoOTPEmail - autootpRegParam [" + autootpRegParam + "]");
+        
         encParam = encParam.replaceAll("\\+", "_");
         attributes.put("autootpRegParam", encParam);
         
         String strExpirationInMinutes = format(expirationInMinutes * 60);
         attributes.put("strExpiration", strExpirationInMinutes);
         
-        send("emailAutoOTPSubject", Collections.emptyList(), "email-verification.ftl", attributes, addr);
+        send("emailAutoOTPSubject", Collections.emptyList(), "email-autootp-reg.ftl", attributes, addr);
     }
 
     @Override
