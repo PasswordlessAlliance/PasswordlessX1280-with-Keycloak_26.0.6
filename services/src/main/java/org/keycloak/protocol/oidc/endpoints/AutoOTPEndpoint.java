@@ -247,7 +247,7 @@ public class AutoOTPEndpoint {
         String dbIpAddr = realm.getAttribute("autootpAppSettingIpAddress");
         String dbName = realm.getAttribute("autootpAppSettingName");
         String dbProxyDomain = realm.getAttribute("autootpAppSettingProxyServerDomain");
-        String dbStep = realm.getAttribute("autootpAppSettingStep");
+        String dbStep = realm.getAttribute("autootpAuthenticationStep");
         String dbDomainValidToken = realm.getAttribute("autootpReturnDomainValidationToken");
         String dbSecretKey = realm.getAttribute("autootpServerSettingAppServerKey");
         String dbPasswdUpdate = realm.getAttribute("autootpPasswdUpdate");

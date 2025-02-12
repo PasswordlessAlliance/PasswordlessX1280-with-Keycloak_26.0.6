@@ -59,8 +59,8 @@ public class RealmBean {
         return realm.getAttribute("autootpAppSettingProxyServerDomain");
     }
     
-    public String getAttributeautootpAppSettingStep() {
-        return realm.getAttribute("autootpAppSettingStep");
+    public String getAttributeautootpAuthenticationStep() {
+        return realm.getAttribute("autootpAuthenticationStep");
     }
     
     public String getAttributeautootpReturnDomainValidationToken() {

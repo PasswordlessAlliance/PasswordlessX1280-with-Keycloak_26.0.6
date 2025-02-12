@@ -247,7 +247,7 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
             autootp_info = arrAutoOTPInfo[0];
             autootp_info = autootp_info.trim();
             
-            login_step = context.getRealm().getAttribute("autootpAppSettingStep");
+            login_step = context.getRealm().getAttribute("autootpAuthenticationStep");
             dbSecretKey = context.getRealm().getAttribute("autootpServerSettingAppServerKey");
             autootp_info = getDecryptAES(autootp_info, dbSecretKey.getBytes());
             
@@ -273,7 +273,7 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
             gapSeconds = 0;
         }
 
-        //System.out.println("AbstractUsernameFormAuthenticator :: validatePassword - login_flow [" + login_flow + "] login_step [" + login_step + "] page_set [" + page_set + "] dateTime [Req " + dateTime + " sec / Gap " + gapSeconds + "sec] username [" + username + "] <-- userId [" + userId + "]");
+        System.out.println("AbstractUsernameFormAuthenticator :: validatePassword - login_flow [" + login_flow + "] login_step [" + login_step + "] page_set [" + page_set + "] dateTime [Req " + dateTime + " sec / Gap " + gapSeconds + "sec] username [" + username + "] <-- userId [" + userId + "]");
         
         if(page_set.equals("login") && login_flow.toUpperCase().equals("AUTOOTP") && login_step.equals("1step")) {
             if(!username.equals(userId)) {

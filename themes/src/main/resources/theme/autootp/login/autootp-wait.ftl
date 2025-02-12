@@ -16,7 +16,7 @@
 				<input type="hidden" id="login_client" name="login_client" value="${client.name!''}">
                 <input type="hidden" id="login_clientId" name="login_clientId" value="${client.clientId!''}">
 
-        		<input type="hidden" id="login_step" name="login_step" value="${realm.attributeautootpAppSettingStep!''}">
+        		<input type="hidden" id="login_step" name="login_step" value="${realm.attributeautootpAuthenticationStep!''}">
 				<input type="hidden" id="login_flow" name="login_flow" value="">
                 <input type="hidden" id="submit_url" name="submit_url" value="${url.loginAction}">
                 

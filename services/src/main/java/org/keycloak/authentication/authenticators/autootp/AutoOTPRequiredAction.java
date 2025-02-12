@@ -92,7 +92,7 @@ public class AutoOTPRequiredAction implements RequiredActionProvider, Credential
         
         try {
         	userId = context.getUser().getUsername();
-        	login_step = context.getRealm().getAttribute("autootpAppSettingStep");
+        	login_step = context.getRealm().getAttribute("autootpAuthenticationStep");
         	dbSecretKey = context.getRealm().getAttribute("autootpServerSettingAppServerKey");
         	dbPasswdUpdate = context.getRealm().getAttribute("autootpPasswdUpdate");
         	
@@ -123,7 +123,7 @@ public class AutoOTPRequiredAction implements RequiredActionProvider, Credential
         		}
         	}
 	        
-	        //System.out.println("login_step [" + login_step + "] userId [" + userId + "] hiddenUsername [" + hiddenUsername + "] autootpInfo [" + autootpInfo + "] dateTime [" + dateTime + " / " + gapSeconds + "sec] username [" + username + "] QRReg [" + QRReg + "]");
+	        //System.out.println("AutoOTPRequiredAction :: processAction - login_step [" + login_step + "] userId [" + userId + "] hiddenUsername [" + hiddenUsername + "] autootpInfo [" + autootpInfo + "] dateTime [" + dateTime + " / " + gapSeconds + "sec] username [" + username + "] QRReg [" + QRReg + "]");
 	        
 	        if(login_step.equals("1step") || login_step.equals("2step")) {
 		        if(!username.equals(userId)) {

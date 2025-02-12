@@ -20,7 +20,7 @@
                     <input type="hidden" id="login_realm" name="login_realm" value="${realm.name!''}">
                     <input type="hidden" id="login_client" name="login_client" value="${client.name!''}">
                     <input type="hidden" id="login_clientId" name="login_clientId" value="${client.clientId!''}">
-                    <input type="hidden" id="login_step" name="login_step" value="${realm.attributeautootpAppSettingStep!''}">
+                    <input type="hidden" id="login_step" name="login_step" value="${realm.attributeautootpAuthenticationStep!''}">
                     <input type="hidden" id="login_flow" name="login_flow" value="">
                     <input type="hidden" id="autootp_info" name="autootp_info" value="">
 
