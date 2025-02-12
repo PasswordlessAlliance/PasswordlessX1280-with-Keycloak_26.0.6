@@ -60,7 +60,7 @@
 		<input type="hidden" id="AreYouSureYouWantToUnregisterAutoOTP" name="AreYouSureYouWantToUnregisterAutoOTP" value='${msg("AreYouSureYouWantToUnregisterAutoOTP")}'>
 
 	    <div id="kc-header" class="${properties.kcHeaderClass!}">
-	        <div id="kc-header-wrapper" class="${properties.kcHeaderWrapperClass!}">${realm.displayNameHtml}</div>
+	        <div id="kc-header-wrapper" class="${properties.kcHeaderWrapperClass!}">${realm.displayNameHtml!realm.name}</div>
 	    </div>
 	    
 	    <div class="card-pf" id="autootp_expiration" name="autootp_expiration" style="display:none;">

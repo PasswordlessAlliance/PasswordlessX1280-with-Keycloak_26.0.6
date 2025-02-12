@@ -1,9 +1,9 @@
 <#import "template.ftl" as layout>
 <@layout.registrationLayout; section>
 	<#if section = "title">
-        ${msg("loginTitle",realm.displayNameHtml)}
+        ${msg("loginTitle",realm.displayNameHtml!realm.name)}
     <#elseif section = "header">
-        ${msg("loginTitleHtml",realm.displayNameHtml)}
+        ${msg("loginTitleHtml",realm.displayNameHtml!realm.name)}
     <#elseif section = "form">
 		<div id="kc-form">
 			<div id="kc-form-wrapper" style="display:none;">
