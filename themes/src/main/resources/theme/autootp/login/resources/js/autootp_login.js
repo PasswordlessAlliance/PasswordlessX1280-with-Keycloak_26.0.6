@@ -139,6 +139,7 @@ function parseParams() {
 	}
 	else {
 		login_url = tmp_login_url;
+		window.localStorage.removeItem('login_url');
 	}
 	
 	if(login_url == "")
