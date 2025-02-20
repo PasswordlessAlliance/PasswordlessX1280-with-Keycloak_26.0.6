@@ -27,6 +27,7 @@ if(strExpirationInMinutes !== undefined && strExpirationInMinutes != null && str
 var username = $("#username").val();
 var authDomain = $("#authDomain").val();
 var baseUrl = $("#baseUrl").val();
+var movehome = $("#movehome").val();
 
 var clientId = $("#clientId").val();
 var clientClientId = $("#clientClientId").val();
@@ -34,9 +35,9 @@ var clientClientId = $("#clientClientId").val();
 if(username === undefined || username == null)				username = "";
 if(authDomain === undefined || authDomain == null)			authDomain = "";
 if(baseUrl === undefined || baseUrl == null)				baseUrl = "";
-
 if(baseUrl == "")
 	baseUrl = "javascript:alert('" + HomeURLIsNotRegistered + "');";
+if(movehome === undefined || movehome == null)				movehome = "";
 
 if(clientId === undefined || clientId == null)				clientId = "";
 if(clientClientId === undefined || clientClientId == null)	clientClientId = "";
@@ -56,9 +57,16 @@ function AutoOTPRegist() {
 		$("#userinfo_empty").css("display", "block");
 	}
 	else {
+		if(movehome == "F") {
+			$("#verify_email").css("display", "block");
+		}
 		$("#autootp_content").css("display", "block");
 		AutoOtpManageRestAPI();
 	}
+}
+
+function verifyEmail() {
+	location.href = link;
 }
 
 function AutoOtpManageRestAPI() {
@@ -113,7 +121,11 @@ function loginAutoOTPwithdrawal() {
 		var code = jsonResult.code;
 		if(code == "000" || code == "000.0") {
 			alert(RegistrationHasBeenCanceled);
-			moveHome();
+			
+			if(link == "" || movehome == "T")
+				moveHome();
+			else
+				location.href = link;
 		}
 		else {
 			alert(PleaseTryAgainLater);
@@ -212,7 +224,11 @@ function regAutoOTPResult() {
 		clearTimeout(timeoutId2);
 		
 		alert(RegistrationCompleted);
-		moveHome();
+		
+		if(link == "" || movehome == "T")
+			moveHome();
+		else
+			location.href = link;
 	}
 }
 

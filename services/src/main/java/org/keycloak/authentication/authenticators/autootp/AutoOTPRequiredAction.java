@@ -64,7 +64,7 @@ public class AutoOTPRequiredAction implements RequiredActionProvider, Credential
     		hiddenUsername = (context.getHttpRequest().getDecodedFormParameters().getFirst("hidden_username"));
     		autootpInfo = (context.getHttpRequest().getDecodedFormParameters().getFirst("autootp_info"));
     	} catch(Exception e) {
-    		System.out.println(e.toString());
+    		System.out.println("requiredActionChallenge error : " + e.toString());
     	}
 
         Response challenge = context.form()
@@ -123,23 +123,20 @@ public class AutoOTPRequiredAction implements RequiredActionProvider, Credential
         		}
         	}
 	        
-	        //System.out.println("AutoOTPRequiredAction :: processAction - login_step [" + login_step + "] userId [" + userId + "] hiddenUsername [" + hiddenUsername + "] autootpInfo [" + autootpInfo + "] dateTime [" + dateTime + " / " + gapSeconds + "sec] username [" + username + "] QRReg [" + QRReg + "]");
-	        
 	        if(login_step.equals("1step") || login_step.equals("2step")) {
 		        if(!username.equals(userId)) {
-		        	System.out.println("username does not match [" + username + "] [" + userId + "] --> Login Failed !!!");
+		        	System.out.println("username does not match [" + username + "] [" + userId + "] --> Login failed");
 		        }
 		        else if(gapSeconds > maxGapSeconds) {
-		        	System.out.println(gapSeconds + " seconds have passed since AutoOTP authentication. --> Login Failed !!!");
+		        	System.out.println(gapSeconds + " seconds have passed since AutoOTP authentication. --> Login failed");
 		        }
 		        else {
-		        	System.out.println("userId[" + userId + "] and username[" + username + "] is equal and " + gapSeconds + " seconds have passed (Timeout limit: " + maxGapSeconds + " seconds) / Change Password [" + dbPasswdUpdate + "] --> Login Success !!!");
 		            context.success();
 		            
 		            if(login_step.equals("1step") && dbPasswdUpdate.equals("true")) {
 			            UserModel user = context.getUser();
 			            if(user != null) {
-				            System.out.println("Login - Change password !!!");
+				            System.out.println("Login - Change password");
 	
 				            String sessionUsername = user.getUsername();
 				        	String id = user.getId();
@@ -149,9 +146,6 @@ public class AutoOTPRequiredAction implements RequiredActionProvider, Credential
 			                context.success();
 				            user.removeRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD);
 			            }
-			            else {
-				            System.out.println("User is null --> Cannot change password");
-			            }
 		            }
 		        }
 	        }
@@ -160,7 +154,7 @@ public class AutoOTPRequiredAction implements RequiredActionProvider, Credential
 	        }
 	        
         } catch(Exception e) {
-        	System.out.println(e.toString());
+        	System.out.println("processAction error : " + e.toString());
         }
     }
 

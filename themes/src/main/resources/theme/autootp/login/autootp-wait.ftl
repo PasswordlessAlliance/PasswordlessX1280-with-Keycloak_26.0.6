@@ -68,11 +68,6 @@
 						<input tabindex="4" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="login" id="kc-login" value="Cancel Login" onclick="CancelLogin()"/>
 					</div>
 					<br>
-					<!--
-					<div style="width:100%;text-align:right;">
-						<a href="#" onclick="loginAutoOTPwithdrawal('T');" style="display:inline-block;">Unregistrate AutoOTP</a>
-					</div>
-					-->
 				</div>
 				
 				<div id="reg_qr" style="text-align:center; display:none;">
@@ -88,12 +83,6 @@
 						<b><span id="rest_time" style="font-size:24px;text-shadow:1px 1px 2px rgba(0,0,0,0.9);color:#afafaf;"></span></b>
 					</span>
 					<br>
-
-					<!--
-					<div id="kc-form-buttons" class="${properties.kcFormGroupClass!}">				
-						<input tabindex="4" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="login" id="kc-login" value="Cancel AutoOTP Registration" onclick="moveBack()"/>
-					</div>
-					-->
 				</div>
 				<div id="send_email" style="text-align:center; display:none;">
 					<div id="kc-form-buttons" class="${properties.kcFormGroupClass!}">				
@@ -109,12 +98,6 @@
 					<div id="kc-form-buttons" class="${properties.kcFormGroupClass!}">				
 						<input tabindex="4" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="login" id="unreg_autootp" value="Unregistrate AutoOTP" onclick="loginAutoOTPwithdrawal('F')"/>
 					</div>
-					<!--
-					<br>
-					<div style="width:100%;text-align:right;">
-						<a href="#" onclick="cancelWithdrawAutoOTP();" style="display:inline-block;">${msg("backToLogin")}</a>
-					</div>
-					-->
 				</div>
 
 			</div>
@@ -135,9 +118,6 @@
 	    	&nbsp;
 		</div>
 		<div style="width:100%;text-align:right;">
-			<!--
-	    	<a href="#" onclick="sendAutoOTPRegEmail();" style="display:inline-block;">AutoOTP RegEmail</a>
-	    	-->
 	    	<a href="#" onclick="cancelWithdrawAutoOTP();" style="display:inline-block;">${msg("BackToLogin")}</a>
 		</div>
 	    <script type="text/javascript" src="${url.resourcesPath}/js/jquery-3.7.1.min.js"></script>

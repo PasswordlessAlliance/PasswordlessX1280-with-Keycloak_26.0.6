@@ -60,6 +60,8 @@ import org.keycloak.theme.beans.LinkExpirationFormatterMethod;
 import org.keycloak.theme.beans.MessageFormatterMethod;
 import org.keycloak.theme.freemarker.FreeMarkerProvider;
 
+import org.keycloak.authentication.authenticators.autootp.AutoOTPRequiredAction;
+
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
@@ -99,8 +101,6 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
 	        clientClientId = client.getClientId();
     	}
     	
-    	System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> FreeMarkerEmailTemplateProvider :: setUser(UserModel user, ClientModel client) - client [" + client + "]");
-    	
         attributes.put("baseUrl", baseUrl);
         attributes.put("clientId", clientId);
         attributes.put("clientClientId", clientClientId);
@@ -129,33 +129,23 @@ public class FreeMarkerEmailTemplateProvider implements EmailTemplateProvider {
         AuthenticationFlowModel flowModel = realm.getBrowserFlow();
         String dbBrowserFlowAlias = flowModel.getAlias();
         
-String dbFlowBinding = "";
-        
-        
+        String dbFlowBinding = "";
         String dbBrowserFlowId = flowModel.getId();
         String dbBrowserFlowDesc = flowModel.getDescription();
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> FreeMarkerEmailTemplateProvider :: setUser(UserModel user) - dbBrowserFlowId [" + dbBrowserFlowId + "] dbBrowserFlowDesc [" + dbBrowserFlowDesc + "] dbBrowserFlowAlias [" + dbBrowserFlowAlias + "]");
         
         String tmpClientId = (String) attributes.get("clientId");
         String tmpClientClientId = (String) attributes.get("clientClientId");
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> FreeMarkerEmailTemplateProvider :: setUser(UserModel user) - authenticationSession [" + authenticationSession + "] clientId [" + tmpClientClientId + "] clientClientId [" + tmpClientClientId + "]");
 
         ClientModel client = realm.getClientByClientId(tmpClientClientId);
 
         if(client != null) {
 	        Map<String, String> flowBindings = client.getAuthenticationFlowBindingOverrides();
-	        if(flowBindings == null) {
-	        	System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> FreeMarkerEmailTemplateProvider :: setUser(UserModel user) - flowBindings is null !!!!");
-	        }
-	        else {
-	        	System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> FreeMarkerEmailTemplateProvider :: setUser(UserModel user) - flowBindings : " + flowBindings.size());
-	        	
+	        if(flowBindings != null) {
 	        	Set<String> set = flowBindings.keySet();
 	        	Iterator<String> it = set.iterator();
 	        	while(it.hasNext()) {
 	        		String key = it.next();
 	        		dbFlowBinding = key;
-	        		System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> FreeMarkerEmailTemplateProvider :: setUser(UserModel user) - key [" + key + "] value [" + flowBindings.get(key) + "]");
 	        	}
 	        }
         }
@@ -167,11 +157,9 @@ String dbFlowBinding = "";
             dbBrowserFlowAlias = "AUTOOTP";
         
         if(dbBrowserFlowAlias.equals("AUTOOTP") && dbFlowBinding.equals("browser")) {
+        	// AutoOTP login --> ID/PASS login
         	dbBrowserFlowAlias = "browser";
-        	System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> FreeMarkerEmailTemplateProvider :: setUser(UserModel user) - AutoOTP login --> ID/PASS login");
         }
-        
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> FreeMarkerEmailTemplateProvider :: setUser(UserModel user) - dbBrowserFlowAlias [" + dbBrowserFlowAlias + "]");
         
         String dateTime = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         
@@ -185,19 +173,6 @@ String dbFlowBinding = "";
         String dbSecretKey = realm.getAttribute("autootpServerSettingAppServerKey");
         String dbAuthDomain = realm.getAttribute("autootpServerSettingAuthServerDomain");
         
-        /*
-        System.out.println("dbBrowserFlowAlias [" + dbBrowserFlowAlias + "]");
-        System.out.println("autootpAppSettingDomain [" + dbDomain + "]");
-        System.out.println("autootpAppSettingEmail [" + dbEmail + "]");
-        System.out.println("autootpAppSettingIpAddress [" + dbIpAddr + "]");
-        System.out.println("autootpAppSettingName [" + dbName + "]");
-        System.out.println("autootpAppSettingProxyServerDomain [" + dbProxyDomain + "]");
-        System.out.println("autootpAuthenticationStep [" + dbStep + "]");
-        System.out.println("autootpReturnDomainValidationToken [" + dbDomainValidToken + "]");
-        System.out.println("autootpServerSettingAppServerKey [" + dbSecretKey + "]");
-        System.out.println("autootpServerSettingAuthServerDomain [" + dbAuthDomain + "]");
-        */
-        
         attributes.put("nowDate", dateTime);
         attributes.put("dbBrowserFlowAlias", dbBrowserFlowAlias);
         attributes.put("autootpAppSettingDomain", dbDomain);
@@ -210,16 +185,6 @@ String dbFlowBinding = "";
         attributes.put("autootpServerSettingAppServerKey", dbSecretKey);
         attributes.put("autootpServerSettingAuthServerDomain", dbAuthDomain);
 
-        /*
-        System.out.println("isEnabled [" + strIsEnabled + "]");
-        System.out.println("isEmailVerified [" + strIsEmailVerified + "]");
-        System.out.println("userId [" + userId + "]");
-        System.out.println("username [" + username + "]");
-        System.out.println("firstName [" + firstName + "]");
-        System.out.println("lastName [" + lastName + "]");
-        System.out.println("email [" + email + "]");
-        */
-        
         attributes.put("isEnabled", strIsEnabled);
         attributes.put("isEmailVerified", strIsEmailVerified);
         attributes.put("userId", userId);
@@ -335,7 +300,15 @@ String dbFlowBinding = "";
     public void sendVerifyEmail(String link, long expirationInMinutes) throws EmailException {
         Map<String, Object> attributes = new HashMap<>(this.attributes);
         addLinkInfoIntoAttributes(link, expirationInMinutes, attributes);
-
+        
+        AuthenticationFlowModel flowModel = realm.getBrowserFlow();
+        String dbBrowserFlowAlias = flowModel.getAlias();
+        if(dbBrowserFlowAlias == null)
+            dbBrowserFlowAlias = "";
+        
+        if(dbBrowserFlowAlias.toUpperCase().indexOf("AUTOOTP") > -1 || dbBrowserFlowAlias.toUpperCase().indexOf("PASSWORDLESS") > -1)
+            dbBrowserFlowAlias = "AUTOOTP";
+        
         send("emailVerificationSubject", "email-verification.ftl", attributes);
     }
     
@@ -359,8 +332,6 @@ String dbFlowBinding = "";
         String autootpRegParam = dateTime + "|||" + expirationInMinutes + "|||" + username + "|||" + URLEncode(dbAuthDomain) + "|||" + URLEncode(baseUrl) + "|||" + clientId + "|||" + URLEncode(clientClientId);
         String encParam = getEncryptAES(autootpRegParam, dbSecretKey.getBytes());
         
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> FreeMarkerEmailTemplateProvider :: sendAutoOTPEmail - autootpRegParam [" + autootpRegParam + "]");
-        
         encParam = encParam.replaceAll("\\+", "_");
         attributes.put("autootpRegParam", encParam);
         
@@ -368,6 +339,9 @@ String dbFlowBinding = "";
         attributes.put("strExpiration", strExpirationInMinutes);
         
         send("emailAutoOTPSubject", Collections.emptyList(), "email-autootp-reg.ftl", attributes, addr);
+        
+        // Remove "Required user actions" - AutoOTPRequiredAction.PROVIDER_ID
+        user.removeRequiredAction(AutoOTPRequiredAction.PROVIDER_ID);
     }
 
     @Override

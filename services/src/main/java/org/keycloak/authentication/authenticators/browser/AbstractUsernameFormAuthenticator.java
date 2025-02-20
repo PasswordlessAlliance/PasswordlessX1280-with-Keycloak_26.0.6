@@ -243,27 +243,29 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
         
         try {
             List<String> listAutoOTPInfo = (List<String>) inputData.get("autootp_info");
-            String[] arrAutoOTPInfo = listAutoOTPInfo.toArray(new String[listAutoOTPInfo.size()]);
-            autootp_info = arrAutoOTPInfo[0];
-            autootp_info = autootp_info.trim();
-            
-            login_step = context.getRealm().getAttribute("autootpAuthenticationStep");
-            dbSecretKey = context.getRealm().getAttribute("autootpServerSettingAppServerKey");
-            autootp_info = getDecryptAES(autootp_info, dbSecretKey.getBytes());
-            
-            if(autootp_info != null) {
-                String[] arrInfo = autootp_info.split("\\|\\|\\|");    // dateTime + "|||" + username
-                if(arrInfo.length >= 2) {
-                    dateTime = arrInfo[0];
-                    username = arrInfo[1];
-
-                    Date curDate = new Date();
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-                    Date reqDate = dateFormat.parse(dateTime);
-                    long reqDateTime = reqDate.getTime();
-                    long curDateTime = curDate.getTime();
-                    gapSeconds = (curDateTime - reqDateTime) / 1000;
-                }
+            if(listAutoOTPInfo != null) {
+	            String[] arrAutoOTPInfo = listAutoOTPInfo.toArray(new String[listAutoOTPInfo.size()]);
+	            autootp_info = arrAutoOTPInfo[0];
+	            autootp_info = autootp_info.trim();
+	            
+	            login_step = context.getRealm().getAttribute("autootpAuthenticationStep");
+	            dbSecretKey = context.getRealm().getAttribute("autootpServerSettingAppServerKey");
+	            autootp_info = getDecryptAES(autootp_info, dbSecretKey.getBytes());
+	            
+	            if(autootp_info != null) {
+	                String[] arrInfo = autootp_info.split("\\|\\|\\|");    // dateTime + "|||" + username
+	                if(arrInfo.length >= 2) {
+	                    dateTime = arrInfo[0];
+	                    username = arrInfo[1];
+	
+	                    Date curDate = new Date();
+	                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+	                    Date reqDate = dateFormat.parse(dateTime);
+	                    long reqDateTime = reqDate.getTime();
+	                    long curDateTime = curDate.getTime();
+	                    gapSeconds = (curDateTime - reqDateTime) / 1000;
+	                }
+	            }
             }
         } catch(Exception e) {
             autootp_info = "";
@@ -273,17 +275,14 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
             gapSeconds = 0;
         }
 
-        System.out.println("AbstractUsernameFormAuthenticator :: validatePassword - login_flow [" + login_flow + "] login_step [" + login_step + "] page_set [" + page_set + "] dateTime [Req " + dateTime + " sec / Gap " + gapSeconds + "sec] username [" + username + "] <-- userId [" + userId + "]");
-        
         if(page_set.equals("login") && login_flow.toUpperCase().equals("AUTOOTP") && login_step.equals("1step")) {
             if(!username.equals(userId)) {
-                System.out.println("AbstractUsernameFormAuthenticator :: validatePassword - username does not match >>> username [" + username + "] <---> userId [" + userId + "] --> Login Failed !!!");
+                System.out.println("AutoOTP 1step - username does not match : username [" + username + "] <---> userId [" + userId + "] --> Login failed");
             }
             else if(gapSeconds > maxGapSeconds) {
-                System.out.println("AbstractUsernameFormAuthenticator :: validatePassword - " + gapSeconds + " seconds have passed since AutoOTP authentication. --> Login Failed !!!");
+                System.out.println(gapSeconds + " seconds have passed since AutoOTP authentication --> Login failed");
             }
             else {
-                //System.out.println("AbstractUsernameFormAuthenticator :: validatePassword - Login Success !!!");
                 return true;
             }
         }

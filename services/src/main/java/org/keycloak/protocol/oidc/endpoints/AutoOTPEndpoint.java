@@ -394,12 +394,6 @@ public class AutoOTPEndpoint {
     
     public Map<String, Object> callAutoOTPReq(String db_secretKey, String dbPasswdUpdate, String step, String auth_url, String url, String params) {
     	
-    	// If changed, Only shown once
-    	//String secretKey = "6df2d83a754a12ba";
-    	//String secretKey = "7af7c8d6568e28e9";
-    	
-    	//System.out.println("url [" + url + "] params [" + params + "]");
-
     	// Check if AutoOTP is registered
     	String isApUrl = auth_url + "/ap/rest/auth/isAp";
 
@@ -452,38 +446,31 @@ public class AutoOTPEndpoint {
 				
 				if(key.equals("QRReg"))
 					QRReg = value;
-				
-				//System.out.println("userId [" + userId + "] QRReg [" + QRReg + "]");
 			}
 		}
 		
 		if(!apiUrl.equals("")) {
 			result = callApi("POST", apiUrl, params);
 			
-			//System.out.println("result [" + result + "]");
-			
 			if(apiUrl == isApUrl && QRReg.equals("T") && step.equals("1step") && dbPasswdUpdate.equals("true")) {
 				String exist = "";
 				JsonElement element = JsonParser.parseString(result);
 				JsonObject data = element.getAsJsonObject().get("data").getAsJsonObject();
 				exist = data.getAsJsonObject().get("exist").getAsString();
-				//System.out.println("exist [" + exist + "]");
 				
 				if(exist.equals("true")) {
 					UserModel user = session.users().getUserByUsername(realm, userId);
 		            if(user != null) {
-			            System.out.println("QRReg - Change password !!!");
+			            System.out.println("QRReg - Change password");
 
 			            String sessionUsername = user.getUsername();
 			        	String id = user.getId();
 			        	String newPassword = System.currentTimeMillis() + "_new-password";
 
 		                user.credentialManager().updateCredential(UserCredentialModel.password(newPassword, false));
+
 		                //context.success();
 			            user.removeRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD);
-		            }
-		            else {
-			            System.out.println("User is null --> Cannot change password");
 		            }
 				}
 			}
@@ -583,7 +570,7 @@ public class AutoOTPEndpoint {
  	        HttpEntity entity = response.getEntity();
  	        retVal = EntityUtils.toString(entity);
  		} catch(Exception e) {
- 			System.out.println(e.toString());
+ 			System.out.println("CallApi error : " + e.toString());
  		}
  		
  		return retVal;

@@ -42,9 +42,6 @@ public class AutoOTPManager {
     private final String accessTokenGrantType;
 
     public AutoOTPManager(Config config, Client client) {
-    	
-    	System.out.println("############################### AutoOTPManager :: AutoOTPManager");
-    	
         this.config = config;
         WebTarget target = client.target(config.getServerUrl());
         if (!config.isPublicClient()) {
@@ -59,16 +56,10 @@ public class AutoOTPManager {
     }
 
     public String getAccessTokenString() {
-    	
-    	System.out.println("############################### AutoOTPManager :: getAccessTokenString");
-    	
         return getAccessToken().getToken();
     }
 
     public synchronized AccessTokenResponse getAccessToken() {
-    	
-    	System.out.println("############################### AutoOTPManager :: getAccessToken");
-    	
         if (currentToken == null) {
             grantToken();
         } else if (tokenExpired()) {
@@ -78,9 +69,6 @@ public class AutoOTPManager {
     }
 
     public AccessTokenResponse grantToken() {
-    	
-    	System.out.println("############################### AutoOTPManager :: grantToken");
-    	
     	/*
         Form form = new Form().param(GRANT_TYPE, accessTokenGrantType);
         if (PASSWORD.equals(accessTokenGrantType)) {
@@ -107,9 +95,6 @@ public class AutoOTPManager {
     }
 
     public synchronized AccessTokenResponse refreshToken() {
-    	
-    	System.out.println("############################### AutoOTPManager :: refreshToken");
-    	
         if (currentToken.getRefreshToken() == null || refreshTokenExpired()) {
             return grantToken();
         }
@@ -133,36 +118,13 @@ public class AutoOTPManager {
     }
 
     public synchronized void logout() {
-    	
-    	System.out.println("############################### AutoOTPManager :: logout");
-    	
-    	/*
-        if (currentToken.getRefreshToken() == null) {
-            return;
-        }
-
-        Form form = new Form().param(REFRESH_TOKEN, currentToken.getRefreshToken());
-
-        if (config.isPublicClient()) {
-            form.param(CLIENT_ID, config.getClientId());
-        }
-
-        autoOTPService.logout(config.getRealm(), form.asMap());
-        currentToken = null;
-        */
     }
 
     public synchronized void setMinTokenValidity(long minTokenValidity) {
-    	
-    	System.out.println("############################### AutoOTPManager :: setMinTokenValidity minTokenValidity=" + minTokenValidity);
-    	
         this.minTokenValidity = minTokenValidity;
     }
 
     private synchronized boolean tokenExpired() {
-    	
-    	System.out.println("############################### AutoOTPManager :: tokenExpired");
-    	
         return (Time.currentTime() + minTokenValidity) >= expirationTime;
     }
 
@@ -174,9 +136,6 @@ public class AutoOTPManager {
      * @param token the token to invalidate (cannot be null).
      */
     public synchronized void invalidate(String token) {
-    	
-    	System.out.println("############################### AutoOTPManager :: invalidate");
-    	
         if (currentToken == null) {
             return; // There's nothing to invalidate.
         }

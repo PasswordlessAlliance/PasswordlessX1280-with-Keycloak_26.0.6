@@ -37,16 +37,13 @@ public class AutoOTPAuthenticator implements Authenticator, CredentialValidator<
     protected boolean hasCookie(AuthenticationFlowContext context) {
         Cookie cookie = context.getHttpRequest().getHttpHeaders().getCookies().get("AUTOOTP_ANSWERED");
         boolean result = cookie != null;
-        if (result) {
-            System.out.println("Bypassing autootp because cookie is set");
-        }
         return result;
     }
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
         Response challenge = context.form()
-                .createForm("autootp-wait.ftl");
+        					.createForm("autootp-wait.ftl");
         context.challenge(challenge);
     }
 
@@ -96,6 +93,7 @@ public class AutoOTPAuthenticator implements Authenticator, CredentialValidator<
 
     @Override
     public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
+    	// Add "Required user actions" - AutoOTPRequiredAction.PROVIDER_ID
         user.addRequiredAction(AutoOTPRequiredAction.PROVIDER_ID);
     }
 

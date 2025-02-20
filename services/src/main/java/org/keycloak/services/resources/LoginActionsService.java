@@ -584,10 +584,11 @@ public class LoginActionsService {
     
     @Path("autootp-regist")
     @GET
-    public Response executeAutoOTPRegist(@QueryParam("param") String param, @QueryParam("oneclick") String oneclick, @QueryParam("link") String link) {
+    public Response executeAutoOTPRegist(@QueryParam("param") String param, @QueryParam("oneclick") String oneclick, @QueryParam("link") String link, @QueryParam("movehome") String movehome) {
         if(param == null)       param = "";
         if(oneclick == null)    oneclick = "";
         if(link == null)        link = "";
+        if(movehome == null)	movehome = "";
         
         param = param.replaceAll("_", "\\+");
         
@@ -604,6 +605,7 @@ public class LoginActionsService {
         map.put("param", param);
         map.put("oneclick", oneclick);
         map.put("link", link);
+        map.put("movehome", movehome);
         
         String dateTime = "";
         long expirationInMinutes = 0L;
@@ -655,7 +657,7 @@ public class LoginActionsService {
         }
         
         if(gapMinute > expirationInMinutes) {
-            System.out.println("LoginActionsService :: executeAutoOTPRegist - Regist QRCode has been expired !!!");
+            // Regist QRCode has been expired
             username = "";
             dbAuthDomain = "";
         }
@@ -710,7 +712,7 @@ public class LoginActionsService {
         ActionTokenContext<T> tokenContext;
         String eventError = null;
         String defaultErrorMessage = null;
-
+        
         AuthenticationSessionModel authSession = null;
 
         // Setup client, so error page will contain "back to application" link
@@ -1270,7 +1272,6 @@ public class LoginActionsService {
 
     private Response processRequireAction(final String authSessionId, final String code, String action, String clientId, String tabId, String clientData) {
         event.event(EventType.CUSTOM_REQUIRED_ACTION);
-
         SessionCodeChecks checks = checksForCode(authSessionId, code, action, clientId, tabId, clientData, REQUIRED_ACTION);
         if (!checks.verifyRequiredAction(action)) {
             return checks.getResponse();
