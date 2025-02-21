@@ -64,14 +64,16 @@
 	        <div id="kc-header-wrapper" class="${properties.kcHeaderWrapperClass!}">${realm.displayNameHtml!realm.name}</div>
 	    </div>
 	    
-	    <div class="card-pf" id="autootp_expiration" name="autootp_expiration" style="display:none;">
+	    <div class="card-pf" id="autootp_expiration" name="autootp_expiration" style="display:none; margin:10px 0; padding:10px 10px; background-color:white;">
 	        <header class="login-pf-header">
-	        	<h1 id="kc-page-title" style="color:gray;">${msg("YouNeedToResendAutootpSettingEmail")}</h1>
+	        	<span style="display:inline-block; width:100%; text-align:center; color:gray; font-size:24px; margin-top:10px; margin-bottom:10px;">
+		        	${msg("EmailExpired")}
+		        </span>
 	        </header>
 	        <div id="kc-content">
 	        	<div id="kc-content-wrapper">
 	        		<div id="kc-error-meesage">
-	        			<p class="instruction" style="color:gray;">${msg("EmailExpired")}</p>
+	        			<p class="instruction" style="color:gray; width:100%; text-align:center; margin-bottom:10px;">${msg("YouNeedToResendAutootpSettingEmail")}</p>
 	        			<p>
 	                        <a id="backToApplication" href="javascript:moveHome();">${msg("BackToApplication")}</a>
 	        			</p>
@@ -82,7 +84,9 @@
 	    
 	    <div class="card-pf" id="userinfo_empty" name="userinfo_empty" style="display:none;">
 	        <header class="login-pf-header">
-	        	<h1 id="kc-page-title">${msg("YouNeedToResendAutootpSettingEmail")}</h1>
+	        	<span style="display:inline-block; text-align:center; color:gray; font-size:24px; margin-top:20px;">
+	        		${msg("YouNeedToResendAutootpSettingEmail")}
+	        	</span>
 	        </header>
 	        <div id="kc-content">
 	        	<div id="kc-content-wrapper">
@@ -96,17 +100,17 @@
 	        </div>
 	    </div>
 	    
-	    <div class="${properties.kcFormCardClass!}" id="autootp_content" name="autootp_content" style="display:none;">
+	    <div class="${properties.kcFormCardClass!}" id="autootp_content" name="autootp_content" style="display:none; margin:20px 20px;">
 	
-			<div id="reg_qr" style="text-align:center; display:none;">
+			<div id="reg_qr" style="text-align:center; background-color:white; display:none;">
 				<div>
-					<span style="width:100%; text-align:center; color:gray;">
-						<h1>AutoOTP registration</h1>
-						<br>
-						<img id="qr" name="qr" src="" width="300px" height="300px" style="display:inline-block;">
+					<span style="display:inline-block; text-align:center; color:gray; font-size:24px; margin-top:20px;">
+						AutoOTP registration
 					</span>
 					<br>
-					<span style="display:inline-block; width:100%;font-size:18px;color:gray;">
+					<img id="qr" name="qr" src="" width="300px" height="300px" style="display:inline-block;">
+					<br>
+					<span style="display:inline-block; text-align:center; width:100%;font-size:18px;color:gray; margin-bottom:20px;">
 						[Register ID] <b><span id="user_id"></span></b>
 						<br>
 						<b><span id="rest_time" style="font-size:24px;text-shadow:1px 1px 2px rgba(0,0,0,0.9);color:olive;"></span></b>
@@ -114,26 +118,22 @@
 				</div>
 			</div>
 	
-			<div id="cancel_qr" style="text-align:center; display:none;">
-				<span style="display:inline-block; color:gray;">
-					<h3>${msg("AreYouSureYouWantToUnregisterAutoOTP")}</h3>
+			<div id="cancel_qr" style="text-align:center; background-color:white; display:none;">
+				<span style="display:inline-block; color:gray; margin:20px 20px;">
+					${msg("AreYouSureYouWantToUnregisterAutoOTP")}
 				</span>
 				<br>
-				<br>
-				
-				<div id="autootp_login" class="${properties.kcFormGroupClass!}">				
+				<div id="autootp_login" class="${properties.kcFormGroupClass!}" style="padding:10px 10px 10px 10px;">
 					<input tabindex="4" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" value="${msg("UnregisterAutoOTP")}" onclick="loginAutoOTPwithdrawal();"/>
 				</div>
 			</div>
 
-			<div id="verify_email" style="text-align:center; display:none;">
-				<span style="display:inline-block; color:gray; padding:50px 0 0 0;">
-					<h3>${msg("IfYouNeedToVerifyYourEmail")}</h3>
+			<div id="verify_email" style="text-align:center; background-color:white; margin-top:30px; display:none;">
+				<span style="display:inline-block; color:gray; padding:10px 0 0 0;">
+					${msg("IfYouNeedToVerifyYourEmail")}
 				</span>
 				<br>
-				<br>
-				
-				<div id="autootp_login" class="${properties.kcFormGroupClass!}">				
+				<div id="autootp_login" class="${properties.kcFormGroupClass!}" style="padding:10px 10px 10px 10px;">				
 					<input tabindex="4" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" value="${msg("requiredAction.VERIFY_EMAIL")}" onclick="verifyEmail();"/>
 				</div>
 			</div>
