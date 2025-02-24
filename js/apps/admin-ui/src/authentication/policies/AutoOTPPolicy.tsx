@@ -9,6 +9,9 @@ import {
   Radio,
   Select,
   SelectOption,
+  Popover,
+  Text,
+  TextContent,
 } from "@patternfly/react-core";
 
 // import { useEffect } from "react";
@@ -23,12 +26,14 @@ import { useRealm } from "../../context/realm-context/RealmContext";
 import { convertFormValuesToObject, convertToFormValues } from "../../util";
 import { convertAttributeNameToForm } from "../../util";
 
+import { QuestionCircleIcon } from "@patternfly/react-icons";
 
 import { useEffect, useState } from "react";
 import {
   HelpItem,
   FormPanel,
   PasswordControl,
+  useHelp,
   SwitchControl
 } from "@keycloak/keycloak-ui-shared";
 
@@ -64,6 +69,8 @@ export const AutoOTPPolicy = ({ realm, realmUpdated }: AutoOTPPolicyProps) => {
   const form = useForm<FormFields>({ mode: "onChange" });
   const selectControl = useForm<FormFields>({ mode: "onChange" });
 
+  const { enabled } = useHelp();
+  
   const {
     control,
     register,
@@ -782,9 +789,21 @@ useEffect(() => {
 
       <DeleteConfirm />
 
+
       <FormProvider {...form}>
 
+	      {enabled && (
+	        <Popover bodyContent={t(`autootpPolicyFormHelp`)}>
+	          <TextContent className="keycloak__section_intro__help">
+	            <Text>
+	              <QuestionCircleIcon /> {t("autootpIntro")}
+	            </Text>
+	          </TextContent>
+	        </Popover>
+	      )}
+
           <FormPanel title={t("autootpApplicationRegistration")} className="kc-autootp-template">
+
 		    <FormAccess
 		      role="manage-realm"
 		      isHorizontal
