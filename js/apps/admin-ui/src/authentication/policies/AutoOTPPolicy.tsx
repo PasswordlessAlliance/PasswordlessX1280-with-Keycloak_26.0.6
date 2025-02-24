@@ -216,7 +216,7 @@ export const AutoOTPPolicy = ({ realm, realmUpdated }: AutoOTPPolicyProps) => {
             switch(objKey.code){
               case undefined :
                 error = "Server progress Delete error~! ["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "000.0" :
                   delkey = objKey.data.delkey;
@@ -238,7 +238,7 @@ export const AutoOTPPolicy = ({ realm, realmUpdated }: AutoOTPPolicyProps) => {
                         switch(objDel.code){
                           case undefined :
                             error = t("autootpApiResponseCodeUndefined")+"["+code+"]";
-                            addError("authentication:updateAutoOTPError",error);
+                            addError(t("updateAutoOTPError"),error);
                             break;
                           case "000.0" :
                             onDeleteSubmit({...realm});                          
@@ -246,31 +246,31 @@ export const AutoOTPPolicy = ({ realm, realmUpdated }: AutoOTPPolicyProps) => {
                   
                           case "000.1" :
                             error = t("autootpApiResponseCode000.1")+"["+code+"]";
-                            addError("authentication:updateAutoOTPError",error);
+                            addError(t("updateAutoOTPError"),error);
                             break;
                           case "000.2" :
                             error = t("autootpApiResponseCode000.2")+"["+code+"]";
-                            addError("authentication:updateAutoOTPError",error);
+                            addError(t("updateAutoOTPError"),error);
                             break;
                           case "100.1" :
                             error = t("autootpApiResponseCode100.1")+"["+code+"]";
-                            addError("authentication:updateAutoOTPError",error);
+                            addError(t("updateAutoOTPError"),error);
                             break;
                           case "100.2" :
                             error = t("autootpApiResponseCode100.2")+"["+code+"]";
-                            addError("authentication:updateAutoOTPError",error);
+                            addError(t("updateAutoOTPError"),error);
                             break;
                           case "100.3" :
                             error = t("autootpApiResponseCode100.3")+"["+code+"]";
-                            addError("authentication:updateAutoOTPError",error);
+                            addError(t("updateAutoOTPError"),error);
                             break;
                           case "100.4" :
                             error = t("autootpApiResponseCode100.4")+"["+code+"]";
-                            addError("authentication:updateAutoOTPError",error);
+                            addError(t("updateAutoOTPError"),error);
                             break;
                           case "100.5" :
                             error = t("autootpApiResponseCode100.5")+"["+code+"]";
-                            addError("authentication:updateAutoOTPError",error);
+                            addError(t("updateAutoOTPError"),error);
                             break;
                           case "100.6" :
                             error = t("autootpApiResponseCode100.6")+"["+code+"]";
@@ -279,44 +279,44 @@ export const AutoOTPPolicy = ({ realm, realmUpdated }: AutoOTPPolicyProps) => {
                             break;
                           default : 
                             error = t("autootpApiResponseCodeDefault")+"["+code+"]";
-                            addError("authentication:updateAutoOTPError",error);
+                            addError(t("updateAutoOTPError"),error);
                             break;
                         }
 
                       } else {
                         error = t("autootpApiConnectError");
-                        addError("authentication:updateAutoOTPError",error);
+                        addError(t("updateAutoOTPError"),error);
                       }                    
                     })
                 break;
 
               case "000.1" :
                 error = t("autootpApiResponseCode000.1")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "000.2" :
                 error = t("autootpApiResponseCode000.2")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "100.1" :
                 error = t("autootpApiResponseCode100.1")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "100.2" :
                 error = t("autootpApiResponseCode100.2")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "100.3" :
                 error = t("autootpApiResponseCode100.3")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "100.4" :
                 error = t("autootpApiResponseCode100.4")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "100.5" :
                 error = t("autootpApiResponseCode100.5")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "100.6" :
                 error = t("autootpApiResponseCode100.6")+"["+code+"]";
@@ -325,19 +325,19 @@ export const AutoOTPPolicy = ({ realm, realmUpdated }: AutoOTPPolicyProps) => {
                 break;
               default : 
                 error = t("autootpApiResponseCodeDefault")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
             }
 
           } else {
             error = t("autootpApiConnectError");
-            addError("authentication:updateAutoOTPError",error);
+            addError(t("updateAutoOTPError"),error);
           }                    
 
       })
     
     } catch (error) {
-      addError("authentication:updateAutoOTPError", error);
+      addError(t("updateAutoOTPError"), error);
     }
   };
  
@@ -408,7 +408,7 @@ export const AutoOTPPolicy = ({ realm, realmUpdated }: AutoOTPPolicyProps) => {
             switch(objSave.code){
               case undefined :
                 error = t("autootpApiResponseCodeUndefined")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "000.0" :
                 setIsBtnApplicationSettingSave(true);
@@ -426,7 +426,7 @@ export const AutoOTPPolicy = ({ realm, realmUpdated }: AutoOTPPolicyProps) => {
 
                 if(objSave.data.appID == undefined) {
                   error = t("autootpApiResponseCodeAppIDError")+"["+code+"]";
-                  addError("authentication:updateAutoOTPError",error);
+                  addError(t("updateAutoOTPError"),error);
                   return;
                 } else {
                   form.setValue("attributes.autootpAppSettingappID",objSave.data.appID);
@@ -434,7 +434,7 @@ export const AutoOTPPolicy = ({ realm, realmUpdated }: AutoOTPPolicyProps) => {
                 
                 if(objSave.data.dnsTxt == undefined) {
                   error = t("autootpApiResponseCodednsTxtError")+"["+code+"]";
-                  addError("authentication:updateAutoOTPError",error);
+                  addError(t("updateAutoOTPError"),error);
                   return;
                 } else {
                   form.setValue("attributes.autootpReturnDomainValidationToken",objSave.data.dnsTxt);
@@ -448,31 +448,31 @@ export const AutoOTPPolicy = ({ realm, realmUpdated }: AutoOTPPolicyProps) => {
   
               case "000.1" :
                 error = t("autootpApiResponseCode000.1")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "000.2" :
                 error = t("autootpApiResponseCode000.2")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "100.1" :
                 error = t("autootpApiResponseCode100.1")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "100.2" :
                 error = t("autootpApiResponseCode100.2")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "100.3" :
                 error = t("autootpApiResponseCode100.3")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "100.4" :
                 error = t("autootpApiResponseCode100.4")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "100.5" :
                 error = t("autootpApiResponseCode100.5")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "100.6" :
                 error = t("autootpApiResponseCode100.6")+"["+code+"]";
@@ -481,19 +481,19 @@ export const AutoOTPPolicy = ({ realm, realmUpdated }: AutoOTPPolicyProps) => {
                 break;
               default : 
                 error = t("autootpApiResponseCodeDefault")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               }
         
             } else {
               error = t("autootpApiConnectError");
-              addError("authentication:updateAutoOTPError",error);
+              addError(t("updateAutoOTPError"),error);
             }                    
 
         });  
     
     } catch (error) {
-      addError("authentication:updateAutoOTPError", error);
+      addError(t("updateAutoOTPError"), error);
     }
   };
 
@@ -519,13 +519,13 @@ export const AutoOTPPolicy = ({ realm, realmUpdated }: AutoOTPPolicyProps) => {
             switch(objReload.code){
               case undefined :
                 error = t("autootpApiResponseCodeUndefined")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 form.setValue("attributes.autootpReturnServerProgress",error);
                 break;
               case "000.0" :
                 if(objReload.data.status == undefined || objReload.data.status.length <= 0) {
                   error = t("autootpApiResponseCodeUndefined")+"["+objReload.data.status+"]";
-                  addError("authentication:updateAutoOTPError",error);
+                  addError(t("updateAutoOTPError"),error);
                   form.setValue("attributes.autootpReturnServerProgress",error);
                   break;
                 } else {
@@ -570,31 +570,31 @@ export const AutoOTPPolicy = ({ realm, realmUpdated }: AutoOTPPolicyProps) => {
 
               case "000.1" :
                 error = t("autootpApiResponseCode000.1")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "000.2" :
                 error = t("autootpApiResponseCode000.2")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "100.1" :
                 error = t("autootpApiResponseCode100.1")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "100.2" :
                 error = t("autootpApiResponseCode100.2")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "100.3" :
                 error = t("autootpApiResponseCode100.3")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "100.4" :
                 error = t("autootpApiResponseCode100.4")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "100.5" :
                 error = t("autootpApiResponseCode100.5")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
               case "100.6" :
                 error = t("autootpApiResponseCode100.6")+"["+code+"]";
@@ -603,20 +603,20 @@ export const AutoOTPPolicy = ({ realm, realmUpdated }: AutoOTPPolicyProps) => {
                 break;
               default : 
               error = t("autootpApiResponseCodeDefault")+"["+code+"]";
-                addError("authentication:updateAutoOTPError",error);
+                addError(t("updateAutoOTPError"),error);
                 break;
 
             }
 
           } else {
             error = t("autootpApiConnectError");
-            addError("authentication:updateAutoOTPError",error);
+            addError(t("updateAutoOTPError"),error);
           }                    
 
       });              
       
     } catch (error) {
-      addError("authentication:updateAutoOTPError", error);
+      addError(t("updateAutoOTPError"), error);
     }
   };
 
@@ -641,7 +641,7 @@ export const AutoOTPPolicy = ({ realm, realmUpdated }: AutoOTPPolicyProps) => {
           switch(objReload.code){
             case undefined :
               error = t("autootpApiResponseCodeUndefined")+"["+code+"]";
-              addError("authentication:updateAutoOTPError",error);
+              addError(t("updateAutoOTPError"),error);
               break;
             case "000.0" :
               addAlert(t("autootpServerEmailResendSuccess"), AlertVariant.success);
@@ -649,31 +649,31 @@ export const AutoOTPPolicy = ({ realm, realmUpdated }: AutoOTPPolicyProps) => {
 
             case "000.1" :
               error = t("autootpApiResponseCode000.1")+"["+code+"]";
-              addError("authentication:updateAutoOTPError",error);
+              addError(t("updateAutoOTPError"),error);
               break;
             case "000.2" :
               error = t("autootpApiResponseCode000.2")+"["+code+"]";
-              addError("authentication:updateAutoOTPError",error);
+              addError(t("updateAutoOTPError"),error);
               break;
             case "100.1" :
               error = t("autootpApiResponseCode100.1")+"["+code+"]";
-              addError("authentication:updateAutoOTPError",error);
+              addError(t("updateAutoOTPError"),error);
               break;
             case "100.2" :
               error = t("autootpApiResponseCode100.2")+"["+code+"]";
-              addError("authentication:updateAutoOTPError",error);
+              addError(t("updateAutoOTPError"),error);
               break;
             case "100.3" :
               error = t("autootpApiResponseCode100.3")+"["+code+"]";
-              addError("authentication:updateAutoOTPError",error);
+              addError(t("updateAutoOTPError"),error);
               break;
             case "100.4" :
               error = t("autootpApiResponseCode100.4")+"["+code+"]";
-              addError("authentication:updateAutoOTPError",error);
+              addError(t("updateAutoOTPError"),error);
               break;
             case "100.5" :
               error = t("autootpApiResponseCode100.5")+"["+code+"]";
-              addError("authentication:updateAutoOTPError",error);
+              addError(t("updateAutoOTPError"),error);
               break;
             case "100.6" :
               error = t("autootpApiResponseCode100.6")+"["+code+"]";
@@ -682,17 +682,17 @@ export const AutoOTPPolicy = ({ realm, realmUpdated }: AutoOTPPolicyProps) => {
               break;
             default : 
               error = t("autootpApiResponseCodeDefault")+"["+code+"]";
-              addError("authentication:updateAutoOTPError",error);
+              addError(t("updateAutoOTPError"),error);
               break;
             }
           } else {
             error = t("autootpApiConnectError");
-            addError("authentication:updateAutoOTPError",error);
+            addError(t("updateAutoOTPError"),error);
           }                    
       });  
     
     } catch (error) {
-      addError("authentication:updateAutoOTPError", error);
+      addError(t("updateAutoOTPError"), error);
     }
   };
 
@@ -717,7 +717,7 @@ export const AutoOTPPolicy = ({ realm, realmUpdated }: AutoOTPPolicyProps) => {
           switch(objReload.code){
             case undefined :
               error = t("autootpApiResponseCodeUndefined")+"["+code+"]";
-              addError("authentication:updateAutoOTPError",error);
+              addError(t("updateAutoOTPError"),error);
               break;
             case "000.0" :
               addAlert(t("autootpResendSettingsEmailSuccess"), AlertVariant.success);
@@ -725,31 +725,31 @@ export const AutoOTPPolicy = ({ realm, realmUpdated }: AutoOTPPolicyProps) => {
 
             case "000.1" :
               error = t("autootpApiResponseCode000.1")+"["+code+"]";
-              addError("authentication:updateAutoOTPError",error);
+              addError(t("updateAutoOTPError"),error);
               break;
             case "000.2" :
               error = t("autootpApiResponseCode000.2")+"["+code+"]";
-              addError("authentication:updateAutoOTPError",error);
+              addError(t("updateAutoOTPError"),error);
               break;
             case "100.1" :
               error = t("autootpApiResponseCode100.1")+"["+code+"]";
-              addError("authentication:updateAutoOTPError",error);
+              addError(t("updateAutoOTPError"),error);
               break;
             case "100.2" :
               error = t("autootpApiResponseCode100.2")+"["+code+"]";
-              addError("authentication:updateAutoOTPError",error);
+              addError(t("updateAutoOTPError"),error);
               break;
             case "100.3" :
               error = t("autootpApiResponseCode100.3")+"["+code+"]";
-              addError("authentication:updateAutoOTPError",error);
+              addError(t("updateAutoOTPError"),error);
               break;
             case "100.4" :
               error = t("autootpApiResponseCode100.4")+"["+code+"]";
-              addError("authentication:updateAutoOTPError",error);
+              addError(t("updateAutoOTPError"),error);
               break;
             case "100.5" :
               error = t("autootpApiResponseCode100.5")+"["+code+"]";
-              addError("authentication:updateAutoOTPError",error);
+              addError(t("updateAutoOTPError"),error);
               break;
             case "100.6" :
               error = t("autootpApiResponseCode100.6")+"["+code+"]";
@@ -758,16 +758,16 @@ export const AutoOTPPolicy = ({ realm, realmUpdated }: AutoOTPPolicyProps) => {
               break;
             default : 
               error = t("autootpApiResponseCodeDefault")+"["+code+"]";
-              addError("authentication:updateAutoOTPError",error);
+              addError(t("updateAutoOTPError"),error);
               break;
             }
           } else {
             error = t("autootpApiConnectError");
-            addError("authentication:updateAutoOTPError",error);
+            addError(t("updateAutoOTPError"),error);
           }                    
       });  
     } catch (error) {
-      addError("authentication:updateAutoOTPError", error);
+      addError(t("updateAutoOTPError"), error);
     }
   };
 
