@@ -9,7 +9,7 @@
         "name" : "keycloak.v2",
         "types": [ "login" ]
     }, {
-        "name" : "autootp",
+        "name" : "PasswordlessX1280",
         "types": [ "login" ]
     }]
 }
