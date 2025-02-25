@@ -592,14 +592,10 @@ public class LoginActionsService {
         
         param = param.replaceAll("_", "\\+");
         
-        //Response challenge = session.getContext().form().createForm("autootp-regist.ftl");
-        //session.getContext().challenge(challenge);
         boolean action = false;
         String execution = null;
         String errorMessage = "";
 
-        //return processFlow(action, execution, authSession, AUTOOTP_REGIST_PATH, realm.getRegistrationFlow(), errorMessage, new AuthenticationProcessor());
-        
         ClientModel client = null;
         Map<String, Object> map = new HashMap<>();
         map.put("param", param);
@@ -651,7 +647,7 @@ public class LoginActionsService {
                     gapMinute = (curDateTime - reqDateTime) / 60000;
                     
                 } catch(ParseException pe) {
-                    //
+                    // Parameters exception
                 }
             }
         }

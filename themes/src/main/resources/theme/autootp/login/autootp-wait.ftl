@@ -38,7 +38,8 @@
                 <input type="hidden" id="CancelAutoOTPSignIn" name="CancelAutoOTPSignIn" value='${msg("CancelAutoOTPSignIn")}'>
                 <input type="hidden" id="YourAutoOTPAccountNotRegistered" name="YourAutoOTPAccountNotRegistered" value='${msg("YourAutoOTPAccountNotRegistered")}'>
                 <input type="hidden" id="AuthenticationDenied" name="AuthenticationDenied" value='${msg("AuthenticationDenied")}'>
-				
+                <input type="hidden" id="SendAutootpSettingEmail" name="SendAutootpSettingEmail" value='${msg("SendAutootpSettingEmail")}'>
+                
 				<form id="frm" name="frm">
 					<input type="hidden" id="hidden_username" name="hidden_username" value="${(username!'')}">
 					<input type="hidden" id="autootp_info" name="autootp_info" value="${(autootp_info!'')}">
@@ -86,17 +87,17 @@
 				</div>
 				<div id="send_email" style="text-align:center; display:none;">
 					<div id="kc-form-buttons" class="${properties.kcFormGroupClass!}">				
-						<input tabindex="4" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="btn_autootp_email" id="btn_autootp_email" value="Send AutoOTP setting email" onclick="sendAutoOTPRegEmail('F')"/>
+						<input tabindex="4" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="btn_autootp_email" id="btn_autootp_email" value="${msg("SendAutootpSettingEmail")}" onclick="sendAutoOTPRegEmail('F')"/>
 					</div>
 				</div>
 
 				<div id="config" style="text-align:center; display:none;">
 					<span style="display:inline-block; width:100%;font-size:16px;">
-						Your AutoOTP account will be unregistrated.
+						${msg("YourAccountWillBeUnregistrated")}
 					</span>
 					<br>
 					<div id="kc-form-buttons" class="${properties.kcFormGroupClass!}">				
-						<input tabindex="4" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="login" id="unreg_autootp" value="Unregistrate AutoOTP" onclick="loginAutoOTPwithdrawal('F')"/>
+						<input tabindex="4" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="login" id="unreg_autootp" value="${msg("UnregisterAutoOTP")}" onclick="loginAutoOTPwithdrawal('F')"/>
 					</div>
 				</div>
 
@@ -113,7 +114,7 @@
 			&nbsp;
 		</div>
 		<div id="link_autootp_email" name="link_autootp_email" style="width:100%;text-align:right; display:none;">
-	    	<a href="#" onclick="sendAutoOTPRegEmail('T');" style="display:inline-block;">${msg("SendAutoOTPsettingEmail")}</a>
+	    	<a href="#" onclick="sendAutoOTPRegEmail('T');" style="display:inline-block;">${msg("SendAutootpSettingEmail")}</a>
 	    	<br>
 	    	&nbsp;
 		</div>

@@ -1,5 +1,3 @@
-// autootp_login.js
-
 var AutoOTPSignIn = $("#AutoOTPSignIn").val();
 var HomeURLnotRegistered = $("#HomeURLnotRegistered").val();
 var AutoOTPEmailSent = $("#AutoOTPEmailSent").val();
@@ -15,6 +13,8 @@ var YourAutoOTPAccountNotRegistered = $("#YourAutoOTPAccountNotRegistered").val(
 var RegisterAutoOTPAccountFirst = $("#RegisterAutoOTPAccountFirst").val();
 var CancelAutoOTPSignIn = $("#CancelAutoOTPSignIn").val();
 var AuthenticationDenied = $("#AuthenticationDenied").val();
+var AreYouSureYouWantToUnregisterAutoOTP = $("#AreYouSureYouWantToUnregisterAutoOTP").val();
+var SendAutootpSettingEmail = $("#SendAutootpSettingEmail").val();
 
 // AutoOTP accept wait time (seconds)
 MaxTime = 60
@@ -166,8 +166,6 @@ function AutoOtpLoginRestAPI() {
 		autootp_conf = "";
 	window.localStorage.removeItem('conf_autootp');
 
-	console.log("page_set [" + page_set + "] login_flow [" + login_flow + "] login_step [" + login_step + "] username [" + username + "] login_username [" + login_username + "]" + ", autootp_conf [" + autootp_conf + "]");
-	
 	// 1-factor AutoOTP Auth
 	if(login_flow == "AUTOOTP" && login_step == "1step") {
 		if(username != "") {
@@ -228,7 +226,6 @@ function AutoOtpLoginRestAPI() {
 			else {
 				LoginCancel("F");
 				//console.log("Unregistered user");
-				//regAutoOTP();
 				alert(YourAutoOTPAccountNotRegistered + "\n" + RegisterAutoOTPAccountFirst);
 			}
 		}
@@ -255,7 +252,7 @@ function loginAutoOTPconfigure() {
 	$("#login_autootp").css("display", "none");
 	$("#sign_section").css("display", "none");
 	
-	$("#kc-login").val("Send AutoOTP setting email");
+	$("#kc-login").val(SendAutootpSettingEmail);
 	$("#autootp_login_btn").val(AutoOTPSignIn);
 	$("#password").val("");
 }
@@ -682,7 +679,7 @@ function loginAutoOTPwithdrawal(loginFlag) {
 	if(loginFlag == "T")
 		LoginCancel('T');
 	
-	if(confirm("Do you really want to Unregistrate AutoOTP?")) {
+	if(confirm(AreYouSureYouWantToUnregisterAutoOTP)) {
 		
 		window.localStorage.removeItem('session_id');
 		var username = $("#hidden_username").val();

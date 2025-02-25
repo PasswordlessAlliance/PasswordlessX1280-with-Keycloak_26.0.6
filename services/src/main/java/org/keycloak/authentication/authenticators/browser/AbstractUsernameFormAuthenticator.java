@@ -277,10 +277,10 @@ public abstract class AbstractUsernameFormAuthenticator extends AbstractFormAuth
 
         if(page_set.equals("login") && login_flow.toUpperCase().equals("AUTOOTP") && login_step.equals("1step")) {
             if(!username.equals(userId)) {
-                System.out.println("AutoOTP 1step - username does not match : username [" + username + "] <---> userId [" + userId + "] --> Login failed");
+                System.out.println("Passwordless X1280 1step - username does not match : username [" + username + "] <---> userId [" + userId + "] --> Login failed");
             }
             else if(gapSeconds > maxGapSeconds) {
-                System.out.println(gapSeconds + " seconds have passed since AutoOTP authentication --> Login failed");
+                System.out.println(gapSeconds + " seconds have passed since Passwordless X1280 authentication --> Login failed");
             }
             else {
                 return true;

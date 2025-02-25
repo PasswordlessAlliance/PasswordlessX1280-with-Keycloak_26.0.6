@@ -105,7 +105,7 @@
 			<div id="reg_qr" style="text-align:center; background-color:white; display:none;">
 				<div>
 					<span style="display:inline-block; text-align:center; color:gray; font-size:24px; margin-top:20px;">
-						AutoOTP registration
+						Passwordless X1280 registration
 					</span>
 					<br>
 					<img id="qr" name="qr" src="" width="300px" height="300px" style="display:inline-block;">

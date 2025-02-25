@@ -3,8 +3,6 @@
 <#import "buttons.ftl" as buttons>
 <#import "social-providers.ftl" as identityProviders>
 <@layout.registrationLayout displayMessage=!messagesPerField.existsError('username','password') displayInfo=realm.password && realm.registrationAllowed && !registrationDisabled??; section>
-<!-- template: login.ftl autootp -->
-
     <#if section = "header">
         ${msg("loginAccountTitle")}
     <#elseif section = "form">
@@ -43,6 +41,8 @@
                     <input type="hidden" id="CancelAutoOTPSignIn" name="CancelAutoOTPSignIn" value='${msg("CancelAutoOTPSignIn")}'>
                     <input type="hidden" id="YourAutoOTPAccountNotRegistered" name="YourAutoOTPAccountNotRegistered" value='${msg("YourAutoOTPAccountNotRegistered")}'>
                     <input type="hidden" id="AuthenticationDenied" name="AuthenticationDenied" value='${msg("AuthenticationDenied")}'>
+                    <input type="hidden" id="AreYouSureYouWantToUnregisterAutoOTP" name="AreYouSureYouWantToUnregisterAutoOTP" value='${msg("AreYouSureYouWantToUnregisterAutoOTP")}'>
+                    <input type="hidden" id="SendAutootpSettingEmail" name="SendAutootpSettingEmail" value='${msg("SendAutootpSettingEmail")}'>
                     
                     <#if !usernameHidden??>
                         <div class="${properties.kcFormGroupClass!}">
@@ -116,16 +116,10 @@
                         </div>
                         <br>
                         <div id="autootp_login" class="${properties.kcFormGroupClass!}">                
-                            <input tabindex="4" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="autootp_login_btn" id="autootp_login_btn" value="AutoOTP Sign In" onclick="AutoOTPLogin()"/>
+                            <input tabindex="4" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="autootp_login_btn" id="autootp_login_btn" value="${msg("AutoOTPSignIn")}" onclick="AutoOTPLogin()"/>
                         </div>
-                        <!--
                         <div style="width:100%;text-align:right;">
-                            <a href="#" onclick="loginAutoOTPconfigure();" style="display:inline-block;">Configure AutoOTP</a>
-                        </div>
-                        -->
-                        
-                        <div style="width:100%;text-align:right;">
-                            <a href="#" onclick="loginAutoOTPconfigure();" style="display:inline-block;">${msg("sendAutootpSettingEmail")}</a>
+                            <a href="#" onclick="loginAutoOTPconfigure();" style="display:inline-block;">${msg("SendAutootpSettingEmail")}</a>
                         </div>
                     </div>
                     <div id="cancel_config_autootp" name="cancel_config_autootp" style="width:100%;text-align:right;display:none;">
@@ -143,7 +137,6 @@
                     <script type="text/javascript">
                         $(document).ready(function() {
                             AutoOtpLoginRestAPI();
-                            //admin_token = getToken();
                         });
                     </script>
                     

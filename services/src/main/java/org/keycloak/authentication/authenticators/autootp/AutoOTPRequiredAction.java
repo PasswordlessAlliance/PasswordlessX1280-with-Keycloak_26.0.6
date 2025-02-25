@@ -128,16 +128,15 @@ public class AutoOTPRequiredAction implements RequiredActionProvider, Credential
 		        	System.out.println("username does not match [" + username + "] [" + userId + "] --> Login failed");
 		        }
 		        else if(gapSeconds > maxGapSeconds) {
-		        	System.out.println(gapSeconds + " seconds have passed since AutoOTP authentication. --> Login failed");
+		        	System.out.println(gapSeconds + " seconds have passed since Passwordless X1280 authentication. --> Login failed");
 		        }
 		        else {
 		            context.success();
 		            
+		            // Passwordless X1280 Login --> Change password
 		            if(login_step.equals("1step") && dbPasswdUpdate.equals("true")) {
 			            UserModel user = context.getUser();
 			            if(user != null) {
-				            System.out.println("Login - Change password");
-	
 				            String sessionUsername = user.getUsername();
 				        	String id = user.getId();
 				        	String newPassword = System.currentTimeMillis() + "_new-password";
