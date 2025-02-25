@@ -75,17 +75,17 @@ public class AutoOTPAuthenticatorFactory implements AuthenticatorFactory, Config
 
     @Override
     public String getHelpText() {
-        return "A QR code that a user has to scan with the AutoOTP app in user's phone.";
+        return "A QR code that a user has to scan with the Passwordless X1280 app in user's phone.";
     }
 
     @Override
     public String getDisplayType() {
-        return "AutoOTP";
+        return "Passwordless X1280";
     }
 
     @Override
     public String getReferenceCategory() {
-        return "AutoOTP";
+        return "Passwordless X1280";
     }
 
     @Override
