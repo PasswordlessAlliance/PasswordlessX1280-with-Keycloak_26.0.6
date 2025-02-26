@@ -57,9 +57,6 @@ function AutoOTPRegist() {
 		$("#userinfo_empty").css("display", "block");
 	}
 	else {
-		if(movehome == "F") {
-			$("#verify_email").css("display", "block");
-		}
 		$("#autootp_content").css("display", "block");
 		AutoOtpManageRestAPI();
 	}
@@ -74,6 +71,10 @@ function AutoOtpManageRestAPI() {
 	if(isReg == "T") {
 		$("#autootp_content").css("height", "200px");
 		$("#cancel_qr").css("display", "block");
+		$("#verify_email").css("display", "none");
+		if(movehome == "F") {
+			$("#verify_email").css("display", "block");
+		}
 	}
 	else {
 		$("#reg_qr").css("display", "block");
