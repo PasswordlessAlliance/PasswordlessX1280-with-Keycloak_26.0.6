@@ -1002,7 +1002,7 @@ public class AuthenticationManager {
 	            if(dbBrowserFlowAlias == null)
 	                dbBrowserFlowAlias = "";
 	            
-	            if(dbBrowserFlowAlias.toUpperCase().indexOf("AUTOOTP") > -1 || dbBrowserFlowAlias.toUpperCase().indexOf("PASSWORDLESS") > -1)
+	            if(dbBrowserFlowAlias.toUpperCase().indexOf("AUTOOTP") > -1 || dbBrowserFlowAlias.toUpperCase().indexOf("PASSWORDLESS") > -1 || dbBrowserFlowAlias.toUpperCase().indexOf("X1280") > -1)
 	                dbBrowserFlowAlias = "AUTOOTP";
 	            
 	            if(dbBrowserFlowAlias.equals("AUTOOTP")) {
